@@ -1,6 +1,6 @@
 require "pebblebed/version"
 require 'pebblebed/pow_proxy'
 
-module Pebblebed
+module Pebbles
   # Your code goes here...
 end

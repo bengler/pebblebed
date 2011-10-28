@@ -1,9 +1,9 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "pebblebed/version"
+require "pebbles/version"
 
 Gem::Specification.new do |s|
-  s.name        = "pebblebed"
+  s.name        = "pebbles"
   s.version     = Pebblebed::VERSION
   s.authors     = ["Katrina Owen", "Simen Svale Skogsrud"]
   s.email       = ["katrina@bengler.no", "simen@bengler.no"]
@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.summary     = %q{Development tools for working with Pebbles}
   s.description = %q{Development tools for working with Pebbles}
 
-  s.rubyforge_project = "pebblebed"
+  s.rubyforge_project = "pebbles"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
@@ -21,4 +21,6 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   s.add_development_dependency "rspec"
   s.add_runtime_dependency "rack-streaming-proxy"
+  s.add_runtime_dependency "curb"
+  s.add_runtime_dependency "yajl-ruby"
 end

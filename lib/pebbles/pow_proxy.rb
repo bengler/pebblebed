@@ -1,6 +1,6 @@
 require 'rack/streaming_proxy'
 
-module Pebblebed
+module Pebbles
   class PowProxy < Rack::StreamingProxy
     def initialize(app, &block)
       super(app) do |request|
