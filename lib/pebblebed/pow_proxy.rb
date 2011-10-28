@@ -11,17 +11,12 @@ module Pebblebed
 
     class << self
       def remap(request)
-        service, path = remap_path(request.env['PATH_INFO'])
-        "http://#{service}.dev/api#{path}?#{request.env['QUERY_STRING']}".chomp('?') if service
+        service = extract_service_name(request.env['PATH_INFO'])
+        "http://#{service}.dev#{request.env['PATH_INFO']}?#{request.env['QUERY_STRING']}".chomp('?') if service
       end
 
-      def remap_path(original_path)
-        /^\/api\/(?<service>[^\/]+)(?<path>\/.+)?$/ =~ original_path
-        [service, path] if api_path?(path)
-      end
-
-      def api_path?(path)
-        path =~ /^\/v\d+/
+      def extract_service_name(original_path)
+        original_path.scan(/^\/api\/([^\/]+)\/v\d+\//).flatten.first
       end
     end
   end
