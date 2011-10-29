@@ -4,7 +4,7 @@ require "pebbles/version"
 
 Gem::Specification.new do |s|
   s.name        = "pebbles"
-  s.version     = Pebblebed::VERSION
+  s.version     = Pebbles::VERSION
   s.authors     = ["Katrina Owen", "Simen Svale Skogsrud"]
   s.email       = ["katrina@bengler.no", "simen@bengler.no"]
   s.homepage    = ""
@@ -20,7 +20,9 @@ Gem::Specification.new do |s|
 
   # specify any dependencies here; for example:
   s.add_development_dependency "rspec"
+  s.add_runtime_dependency "deepstruct"
   s.add_runtime_dependency "rack-streaming-proxy"
   s.add_runtime_dependency "curb"
   s.add_runtime_dependency "yajl-ruby"
+  s.add_runtime_dependency "queryparams"
 end

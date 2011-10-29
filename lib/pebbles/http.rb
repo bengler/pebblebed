@@ -1,6 +1,9 @@
+# A wrapper for all low level http client stuff
+
 require 'uri'
 require 'curl'
-require 'yajl-ruby'
+require 'yajl'
+require 'queryparams'
 
 module Pebbles
   class HttpError < Exception; end
@@ -24,18 +27,23 @@ module Pebbles
       end
     end
 
-    def self.get(url)
-      result = CurlResult.new(Curl::Easy.perform(url))
-      raise HttpError, "#{result.status_code} #{result.body}" if result.status_code >= 400
+    def self.get(url, params)
+      result = CurlResult.new(Curl::Easy.perform(url_with_params(url, params)))
+      raise HttpError, "#{result.status} #{result.body}" if result.status >= 400
       result
     end
 
-    def self.get_json(url)      
-      Yajl::HttpStream.get(URI.parse(url))
+    def self.get_json(*args)      
+      Yajl::Parser.parse(get(*args).body)
     end
 
     def self.post(url, body)
       raise "Not implemented"
     end
+
+    def self.url_with_params(url, params)
+      "#{url}?#{QueryParams.encode(params || {})}".chomp('?')
+    end
+
   end
 end
