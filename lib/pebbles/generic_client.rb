@@ -1,3 +1,5 @@
+require 'deepstruct'
+
 module Pebbles
   class GenericClient
     def initialize(session_key, root_url)

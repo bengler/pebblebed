@@ -1,5 +1,5 @@
 module Pebbles 
-  class Session 
+  class Connector 
     def initialize(key = nil)
       @key = key
       @clients = {}
