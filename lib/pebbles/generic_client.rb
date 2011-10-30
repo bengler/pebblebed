@@ -5,9 +5,10 @@ module Pebbles
       @session_key = session_key
     end
 
-    def get(url, params = {})
+    def get(url = '', params = {}, &block)
+      puts block.inspect
       params[:session] = @session_key if @session_key
-      Pebbles::Http.get_json(@root_url+url, params)
+      DeepStruct.wrap(Pebbles::Http.get_json(@root_url+url, params, &block))
     end
   end
 end
