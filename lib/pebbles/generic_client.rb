@@ -7,10 +7,23 @@ module Pebbles
       @session_key = session_key
     end
 
-    def get(url = '', params = {}, &block)
-      puts block.inspect
-      params[:session] = @session_key if @session_key
-      DeepStruct.wrap(Pebbles::Http.get_json(@root_url+url, params, &block))
+    def perform(method, url = '', params = {}, &block)
+      params['session'] = @session_key if @session_key
+      begin
+        result = Pebbles::Http.send(method, @root_url+url, params, &block)
+        return DeepStruct.wrap(Yajl::Parser.parse(result.body))        
+      rescue Yajl::ParseError
+        return result.body
+      end
     end
+
+    def get(*args, &block)
+      perform(:get, *args, &block)
+    end
+
+    def post(*args, &block)
+      perform(:post, *args, &block)
+    end
+
   end
 end

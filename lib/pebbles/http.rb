@@ -29,19 +29,19 @@ module Pebbles
     end
 
     def self.get(url = nil, params = nil, &block)
-      url, params = url_and_params_from_args(url, params, &block)
+      url, params = url_and_params_from_args(url, params, &block)      
       result = CurlResult.new(Curl::Easy.perform(url_with_params(url, params)))
-      raise HttpError, "#{result.status} #{result.body}" if result.status >= 400
+      raise HttpError, "#{result.status} #{result.body} (from #{url})" if result.status >= 400
       result
     end
 
-    def self.get_json(*args, &block)      
-      Yajl::Parser.parse(get(*args, &block).body)
+    def self.post(url, params, &block)
+      url, params = url_and_params_from_args(url, params, &block)      
+      result = CurlResult.new(Curl::Easy.http_post(url, *(QueryParams.encode(params).split('&'))))
+      raise HttpError, "#{result.status} #{result.body} (from #{url})" if result.status >= 400
+      result
     end
 
-    def self.post(url, body)
-      raise "Not implemented"
-    end
 
     private
 
