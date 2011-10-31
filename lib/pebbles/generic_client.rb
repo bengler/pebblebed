@@ -25,5 +25,8 @@ module Pebbles
       perform(:post, *args, &block)
     end
 
+    def delete(*args, &block)
+      perform(:delete, *args, &block)
+    end
   end
 end

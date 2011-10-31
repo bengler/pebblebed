@@ -28,20 +28,25 @@ module Pebbles
       end
     end
 
-    def self.get(url = nil, params = nil, &block)
-      url, params = url_and_params_from_args(url, params, &block)      
-      result = CurlResult.new(Curl::Easy.perform(url_with_params(url, params)))
+    def self.handle_http_errors(result)
       raise HttpError, "#{result.status} #{result.body} (from #{url})" if result.status >= 400
       result
+    end
+
+    def self.get(url = nil, params = nil, &block)
+      url, params = url_and_params_from_args(url, params, &block)      
+      handle_http_errors(CurlResult.new(Curl::Easy.perform(url_with_params(url, params))))
     end
 
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)      
-      result = CurlResult.new(Curl::Easy.http_post(url, *(QueryParams.encode(params).split('&'))))
-      raise HttpError, "#{result.status} #{result.body} (from #{url})" if result.status >= 400
-      result
+      handle_http_errors(CurlResult.new(Curl::Easy.http_post(url, *(QueryParams.encode(params).split('&')))))
     end
 
+    def self.delete(url, params, &block)
+      url, params = url_and_params_from_args(url, params, &block)      
+      handle_http_errors(CurlResult.new(Curl::Easy.http_delete(url_with_params(url, params))))
+    end
 
     private
 
