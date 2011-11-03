@@ -23,13 +23,17 @@ module Pebbles
         @curl_result.response_code
       end
 
+      def url
+        @curl_result.url
+      end
+
       def body
         @curl_result.body_str
       end
     end
 
     def self.handle_http_errors(result)
-      raise HttpError, "#{result.status} #{result.body} (from #{url})" if result.status >= 400
+      raise HttpError, "#{result.status} #{result.body} (from #{result.url})" if result.status >= 400
       result
     end
 
