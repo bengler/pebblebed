@@ -26,4 +26,5 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "queryparams"
   s.add_runtime_dependency "pathbuilder"
+  s.add_runtime_dependency "nokogiri"
 end
