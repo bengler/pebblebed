@@ -65,13 +65,14 @@ module Pebbles
     private
 
     def self.url_with_params(url, params)
-      "#{url}?#{QueryParams.encode(params || {})}".chomp('?')
+      url.query = QueryParams.encode(params || {})
+      url.to_s
     end
 
     def self.url_and_params_from_args(url, params = nil, &block)
       if block_given?
         pathbuilder = PathBuilder.new.send(:instance_eval, &block)
-        url = url.chomp("/") + pathbuilder.path
+        url = url.path = pathbuilder.path
         (params ||= {}).merge!(pathbuilder.params)
       end
       [url, params]

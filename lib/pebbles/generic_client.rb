@@ -3,14 +3,23 @@ require 'deepstruct'
 module Pebbles
   class GenericClient
     def initialize(session_key, root_url)
-      @root_url = root_url.chomp('/')
+      @root_url = root_url
       @session_key = session_key
     end
 
-    def perform(method, url = '', params = {}, &block)
+    def perform(method, url = '', params = {}, request_opts = {}, &block)
+
       params['session'] = @session_key if @session_key
+
+      request_url = @root_url.dup
+      if request_opts.has_key? :host
+        request_url.host = request_opts[:host]
+      end
+
+      request_url.path += url
+
       begin
-        result = Pebbles::Http.send(method, @root_url+url, params, &block)
+        result = Pebbles::Http.send(method, request_url, params, &block)
         return DeepStruct.wrap(Yajl::Parser.parse(result.body))        
       rescue Yajl::ParseError
         return result.body

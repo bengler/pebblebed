@@ -27,7 +27,7 @@ module Pebbles
   end
 
   def self.host
-    @host || 'pebbles.dev'
+    @host
   end
 
   def self.host=(value)
@@ -48,6 +48,6 @@ module Pebbles
   end
 
   def self.root_url_for(service)
-    "http://#{host}/api/#{service}/v#{version_of(service)}/"
+    URI("http://#{host}/api/#{service}/v#{version_of(service)}/")
   end
 end
