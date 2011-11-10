@@ -12,7 +12,7 @@ module Pebbles
       params['session'] = @session_key if @session_key
 
       request_url = @root_url.dup
-      request_url.path += url
+      request_url.path = request_url.path.sub(/\/+$/, "") + url
 
       begin
         result = Pebbles::Http.send(method, request_url, params, &block)
