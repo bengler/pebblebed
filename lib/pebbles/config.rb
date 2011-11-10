@@ -27,7 +27,7 @@ module Pebbles
   end
 
   def self.host
-    @host
+    @host || 'pebbles.dev'
   end
 
   def self.host=(value)
@@ -47,7 +47,8 @@ module Pebbles
     @services[service.to_sym][:version] || 1
   end
 
-  def self.root_url_for(service)
+  def self.root_url_for(service, url_opts={})
+    host = url_opts[:host] if url_opts.has_key?(:host)
     URI("http://#{host}/api/#{service}/v#{version_of(service)}/")
   end
 end

@@ -1,12 +1,13 @@
 module Pebbles 
   class Connector 
-    def initialize(key = nil)
+    def initialize(key = nil, url_opts = {})
       @key = key
       @clients = {}
+      @url_opts = url_opts
     end
 
     def [](service)
-      (@clients[service.to_sym] ||= GenericClient.new(@key, Pebbles.root_url_for(service.to_s)))
+      (@clients[service.to_sym] ||= GenericClient.new(@key, Pebbles.root_url_for(service.to_s, @url_opts)))
     end
 
     def me

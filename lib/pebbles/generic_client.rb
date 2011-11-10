@@ -7,15 +7,11 @@ module Pebbles
       @session_key = session_key
     end
 
-    def perform(method, url = '', params = {}, request_opts = {}, &block)
+    def perform(method, url = '', params = {}, &block)
 
       params['session'] = @session_key if @session_key
 
       request_url = @root_url.dup
-      if request_opts.has_key? :host
-        request_url.host = request_opts[:host]
-      end
-
       request_url.path += url
 
       begin
