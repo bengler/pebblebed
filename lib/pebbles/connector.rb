@@ -15,7 +15,6 @@ module Pebbles
 
     def self.client_class_for(service)
       class_name = ActiveSupport::Inflector.classify(service)+'Client'
-      puts "class_name: #{class_name}"
       begin
         Pebbles.const_get(class_name)
       rescue NameError
