@@ -7,7 +7,7 @@ module Pebbles
     end
 
     def god?
-      !!me.god if me
+      me.god if me
     end
   end
 end
