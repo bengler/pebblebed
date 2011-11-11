@@ -48,7 +48,6 @@ module Pebbles
   end
 
   def self.root_url_for(service, url_opts={})
-    host = url_opts[:host] if url_opts.has_key?(:host)
-    URI("http://#{host}/api/#{service}/v#{version_of(service)}/")
+    URI("http://#{url_opts[:host] || host}/api/#{service}/v#{version_of(service)}/")
   end
 end

@@ -1,3 +1,5 @@
+require 'active_support/inflector'
+
 module Pebbles 
   class Connector 
     def initialize(key = nil, url_opts = {})
@@ -7,18 +9,18 @@ module Pebbles
     end
 
     def [](service)
-      (@clients[service.to_sym] ||= GenericClient.new(@key, Pebbles.root_url_for(service.to_s, @url_opts)))
+      client_class = self.class.client_class_for(service)
+      (@clients[service.to_sym] ||= client_class.new(@key, Pebbles.root_url_for(service.to_s, @url_opts)))
     end
 
-    def me
-      return @identity if @identity_checked
-      attributes = self['checkpoint'].get "/identities/me"
-      @identity_checked = true
-      @identity = Pebbles::Identity.new(attributes['identity']) if attributes['identity']      
-    end
-
-    def god?
-      self.god == true
+    def self.client_class_for(service)
+      class_name = ActiveSupport::Inflector.classify(service)+'Client'
+      puts "class_name: #{class_name}"
+      begin
+        Pebbles.const_get(class_name)
+      rescue NameError
+        GenericClient
+      end
     end
   end
 end
