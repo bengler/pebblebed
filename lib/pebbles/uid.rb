@@ -8,18 +8,18 @@ module Pebbles
 
     attr_reader :klass, :path, :oid
     def klass=(value)
-      return @klass = nil if value.strip == ''
+      return @klass = nil if value == '' || value.nil?
       raise InvalidUid, "Invalid klass '#{value}'" unless self.class.valid_klass?(value)
       @klass = value
     end
     def path=(value)
-      return @path = nil if value.strip == ''
-      raise InvalidUid, "Invalid path '#{path}'" unless self.class.valid_path?(value)
+      return @path = nil if value == '' || value.nil?
+      raise InvalidUid, "Invalid path '#{value}'" unless self.class.valid_path?(value)
       @path = (value.strip != "") ? value : nil
     end
     def oid=(value)
-      return @oid = nil if value.strip == ''
-      raise InvalidUid, "Invalid oid '#{oid}'" unless self.class.valid_oid?(value)
+      return @oid = nil if value == '' || value.nil?
+      raise InvalidUid, "Invalid oid '#{value}'" unless self.class.valid_oid?(value)
       @oid = (value.strip != "") ? value : nil
     end
 
@@ -29,7 +29,7 @@ module Pebbles
     end
 
     def self.valid_label?(value)
-      !!(value =~ /^[a-zA-Z0-9]+$/)
+      !!(value =~ /^[a-zA-Z0-9_]+$/)
     end
 
     def self.valid_klass?(value)

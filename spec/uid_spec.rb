@@ -57,6 +57,8 @@ describe Pebbles::Uid do
 
   it "knows how to parse in place" do
     Pebbles::Uid.parse("klass:path#oid").should eq ['klass', 'path', 'oid']
+    Pebbles::Uid.parse("post:this.is.a.path.to#object_id").should eq ['post', 'this.is.a.path.to', 'object_id']
+    Pebbles::Uid.parse("post:#object_id").should eq ['post', nil, 'object_id']
   end
 
 end
