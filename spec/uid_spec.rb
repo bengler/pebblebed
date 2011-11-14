@@ -25,4 +25,23 @@ describe Pebbles::Uid do
     uid.to_s.should eq "klass:#oid"
   end
 
+  it "rejects invalid labels for klass and oid" do
+    Pebbles::Uid.valid_klass?("abc123").should be_true
+    Pebbles::Uid.valid_klass?("abc123!").should be_false
+    Pebbles::Uid.valid_klass?("").should be_false
+    Pebbles::Uid.valid_oid?("abc123").should be_true
+    Pebbles::Uid.valid_oid?("abc123!").should be_false
+    Pebbles::Uid.valid_oid?("abc 123").should be_false
+    Pebbles::Uid.valid_oid?("").should be_false
+  end
+
+  it "rejects invalid paths" do
+    Pebbles::Uid.valid_path?("abc123").should be_true
+    Pebbles::Uid.valid_path?("abc.123").should be_true
+    Pebbles::Uid.valid_path?("").should be_true
+    Pebbles::Uid.valid_path?("abc!.").should be_false
+    Pebbles::Uid.valid_path?(".").should be_false
+    Pebbles::Uid.valid_path?("ab. 123").should be_false
+  end
+
 end
