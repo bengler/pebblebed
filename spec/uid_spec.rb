@@ -25,6 +25,17 @@ describe Pebbles::Uid do
     uid.to_s.should eq "klass:#oid"
   end
 
+  it "raises an exception when you try to create an invalid uid" do
+    -> { Pebbles::Uid.new("!:#298") }.should raise_error Pebbles::InvalidUid
+  end
+
+  it "raises an exception when you modify an uid with an invalid value" do
+    uid = Pebbles::Uid.new("klass:path#oid")
+    -> { uid.klass = "!" }.should raise_error Pebbles::InvalidUid
+    -> { uid.path = "..." }.should raise_error Pebbles::InvalidUid
+    -> { uid.oid = "(/&%$" }.should raise_error Pebbles::InvalidUid
+  end
+
   it "rejects invalid labels for klass and oid" do
     Pebbles::Uid.valid_klass?("abc123").should be_true
     Pebbles::Uid.valid_klass?("abc123!").should be_false
