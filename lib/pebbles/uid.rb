@@ -23,6 +23,11 @@ module Pebbles
       @oid = (value.strip != "") ? value : nil
     end
 
+    def self.parse(string)
+      uid = new(string)
+      [uid.klass, uid.path, uid.oid]
+    end
+
     def self.valid_label?(value)
       !!(value =~ /^[a-zA-Z0-9]+$/)
     end

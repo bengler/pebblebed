@@ -55,4 +55,8 @@ describe Pebbles::Uid do
     Pebbles::Uid.valid_path?("ab. 123").should be_false
   end
 
+  it "knows how to parse in place" do
+    Pebbles::Uid.parse("klass:path#oid").should eq ['klass', 'path', 'oid']
+  end
+
 end

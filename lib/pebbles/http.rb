@@ -6,6 +6,7 @@ require 'yajl'
 require 'queryparams'
 require 'nokogiri'
 require 'pathbuilder'
+require 'active_support'
 
 module Pebbles
   class HttpError < Exception; end
@@ -33,6 +34,24 @@ module Pebbles
       end
     end
 
+
+    def self.get(url = nil, params = nil, &block)
+      url, params = url_and_params_from_args(url, params, &block)      
+      handle_curl_response(Curl::Easy.perform(url_with_params(url, params)))
+    end
+
+    def self.post(url, params, &block)
+      url, params = url_and_params_from_args(url, params, &block)      
+      handle_curl_response(Curl::Easy.http_post(url, *(QueryParams.encode(params).split('&'))))
+    end
+
+    def self.delete(url, params, &block)
+      url, params = url_and_params_from_args(url, params, &block)      
+      handle_curl_response(Curl::Easy.http_delete(url_with_params(url, params)))
+    end
+
+    private
+
     def self.sinatra_error(html_text)
       doc = Nokogiri::HTML(html_text)
       @@sinatra_embed_css + doc.css('script,body').to_html
@@ -42,27 +61,14 @@ module Pebbles
       if result.status >= 400
         errmsg = "Service request to <a href=\"#{result.url}\">#{result.url}</a> failed with the following error:</pre>"
         errmsg << "<div id=\"sinatra_error\">#{sinatra_error(result.body)}</div><pre>"
-        raise HttpError, errmsg.html_safe
+        raise HttpError, ActiveSupport::SafeBuffer.new(errmsg) # same as errmsg.html_safe in rails
       end
       result
     end
 
-    def self.get(url = nil, params = nil, &block)
-      url, params = url_and_params_from_args(url, params, &block)      
-      handle_http_errors(CurlResult.new(Curl::Easy.perform(url_with_params(url, params))))
+    def self.handle_curl_response(curl_response)      
+      handle_http_errors(CurlResult.new(curl_response))
     end
-
-    def self.post(url, params, &block)
-      url, params = url_and_params_from_args(url, params, &block)      
-      handle_http_errors(CurlResult.new(Curl::Easy.http_post(url, *(QueryParams.encode(params).split('&')))))
-    end
-
-    def self.delete(url, params, &block)
-      url, params = url_and_params_from_args(url, params, &block)      
-      handle_http_errors(CurlResult.new(Curl::Easy.http_delete(url_with_params(url, params))))
-    end
-
-    private
 
     def self.url_with_params(url, params)
       url.query = QueryParams.encode(params || {})
@@ -72,7 +78,8 @@ module Pebbles
     def self.url_and_params_from_args(url, params = nil, &block)
       if block_given?
         pathbuilder = PathBuilder.new.send(:instance_eval, &block)
-        url = url.path = pathbuilder.path
+        url = url.dup
+        url.path = url.path.chomp("/")+pathbuilder.path
         (params ||= {}).merge!(pathbuilder.params)
       end
       [url, params]
