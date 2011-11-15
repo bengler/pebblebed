@@ -2,11 +2,11 @@ require 'spec_helper'
 
 describe Pebbles::Uid do
   it "parses a full uid correctly" do
-    uid = Pebbles::Uid.new("klass:path#oid")
+    uid = Pebbles::Uid.new("klass:path$oid")
     uid.klass.should eq "klass"
     uid.path.should eq "path"
     uid.oid.should eq "oid"
-    uid.to_s.should eq "klass:path#oid"
+    uid.to_s.should eq "klass:path$oid"
   end
 
   it "parses an uid with no oid correctly" do
@@ -18,19 +18,19 @@ describe Pebbles::Uid do
   end
 
   it "parses an uid with no path correctly" do
-    uid = Pebbles::Uid.new("klass:#oid")
+    uid = Pebbles::Uid.new("klass:$oid")
     uid.klass.should eq "klass"
     uid.path.should be_nil
     uid.oid.should eq "oid"
-    uid.to_s.should eq "klass:#oid"
+    uid.to_s.should eq "klass:$oid"
   end
 
   it "raises an exception when you try to create an invalid uid" do
-    -> { Pebbles::Uid.new("!:#298") }.should raise_error Pebbles::InvalidUid
+    -> { Pebbles::Uid.new("!:$298") }.should raise_error Pebbles::InvalidUid
   end
 
   it "raises an exception when you modify an uid with an invalid value" do
-    uid = Pebbles::Uid.new("klass:path#oid")
+    uid = Pebbles::Uid.new("klass:path$oid")
     -> { uid.klass = "!" }.should raise_error Pebbles::InvalidUid
     -> { uid.path = "..." }.should raise_error Pebbles::InvalidUid
     -> { uid.oid = "(/&%$" }.should raise_error Pebbles::InvalidUid
@@ -56,9 +56,9 @@ describe Pebbles::Uid do
   end
 
   it "knows how to parse in place" do
-    Pebbles::Uid.parse("klass:path#oid").should eq ['klass', 'path', 'oid']
-    Pebbles::Uid.parse("post:this.is.a.path.to#object_id").should eq ['post', 'this.is.a.path.to', 'object_id']
-    Pebbles::Uid.parse("post:#object_id").should eq ['post', nil, 'object_id']
+    Pebbles::Uid.parse("klass:path$oid").should eq ['klass', 'path', 'oid']
+    Pebbles::Uid.parse("post:this.is.a.path.to$object_id").should eq ['post', 'this.is.a.path.to', 'object_id']
+    Pebbles::Uid.parse("post:$object_id").should eq ['post', nil, 'object_id']
   end
 
 end

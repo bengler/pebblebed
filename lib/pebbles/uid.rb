@@ -2,7 +2,7 @@ module Pebbles
   class InvalidUid < StandardError; end
   class Uid
     def initialize(uid)
-      /(?<klass>^[^:]+)\:(?<path>[^\#]*)?\#?(?<oid>.*$)?/ =~ uid
+      /(?<klass>^[^:]+)\:(?<path>[^\$]*)?\$?(?<oid>.*$)?/ =~ uid
       self.klass, self.path, self.oid = klass, path, oid
     end
 
@@ -54,7 +54,7 @@ module Pebbles
     end
 
     def to_s
-      "#{@klass}:#{@path}##{@oid}".chomp("#")
+      "#{@klass}:#{@path}$#{@oid}".chomp("$")
     end
     alias_method :to_uid, :to_s 
 
