@@ -2,8 +2,7 @@ module Pebbles
   class InvalidUid < StandardError; end
   class Uid
     def initialize(uid)
-      /(?<klass>^[^:]+)\:(?<path>[^\$]*)?\$?(?<oid>.*$)?/ =~ uid
-      self.klass, self.path, self.oid = klass, path, oid
+      self.klass, self.path, self.oid = self.class.raw_parse(uid)
     end
 
     attr_reader :klass, :path, :oid
@@ -21,6 +20,11 @@ module Pebbles
       return @oid = nil if value == '' || value.nil?
       raise InvalidUid, "Invalid oid '#{value}'" unless self.class.valid_oid?(value)
       @oid = (value.strip != "") ? value : nil
+    end
+
+    def self.raw_parse(string)
+      /(?<klass>^[^:]+)\:(?<path>[^\$]*)?\$?(?<oid>.*$)?/ =~ string
+      [klass, path, oid]
     end
 
     def self.parse(string)
