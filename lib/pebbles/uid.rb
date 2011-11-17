@@ -3,6 +3,8 @@ module Pebbles
   class Uid
     def initialize(uid)
       self.klass, self.path, self.oid = self.class.raw_parse(uid)
+      raise InvalidUid, "Missing klass in uid" unless self.klass
+      raise InvalidUid, "A valid uid must specify either path or oid" unless self.path || self.oid
     end
 
     attr_reader :klass, :path, :oid
@@ -25,6 +27,14 @@ module Pebbles
     def self.raw_parse(string)
       /(?<klass>^[^:]+)\:(?<path>[^\$]*)?\$?(?<oid>.*$)?/ =~ string
       [klass, path, oid]
+    end
+
+    def self.valid?(string)
+      begin 
+        true if new(string)
+      rescue InvalidUid
+        false
+      end
     end
 
     def self.parse(string)

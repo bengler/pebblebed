@@ -61,4 +61,16 @@ describe Pebbles::Uid do
     Pebbles::Uid.parse("post:$object_id").should eq ['post', nil, 'object_id']
   end
 
+  it "knows the valid uids from the invalid ones" do
+    Pebbles::Uid.valid?("F**ing H%$#!!!").should be_false
+    Pebbles::Uid.valid?("").should be_false
+    Pebbles::Uid.valid?("bang:").should be_false
+    Pebbles::Uid.valid?(":bang").should be_false
+    Pebbles::Uid.valid?(":bang$paff").should be_false
+    Pebbles::Uid.valid?("$paff").should be_false
+    Pebbles::Uid.valid?("a:b.c.d$e").should be_true
+    Pebbles::Uid.valid?("a:$e").should be_true
+    Pebbles::Uid.valid?("a:b.c.d").should be_true
+  end
+
 end
