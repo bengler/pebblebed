@@ -31,7 +31,7 @@ module Pebbles
           found = request.identities.find {|i| i.identity.respond_to?(:id) && i.identity.id == id}
           identity = found && found.identity || nil
           result[id] = identity
-          Pebbles.memcached.set(to_cache_key(id), identity.try(:to_json), ttl=10) if Pebbles.memcached
+          Pebbles.memcached.set(to_cache_key(id), identity.try(:to_json), ttl=60*15) if Pebbles.memcached
         end
       end
       return DeepStruct.wrap(result)
