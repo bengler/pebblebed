@@ -4,12 +4,12 @@ describe Pebbles do
   it "has a nice dsl that configures stuff" do
     Pebbles.config do
       host "example.org"
-      memcached "some value"
-      service :checkpoint      
+      memcached $memcached
+      service :checkpoint
     end
 
     Pebbles.host.should eq "example.org"
-    Pebbles.memcached.should eq "some value"
+    Pebbles.memcached.should eq $memcached
     Pebbles::Connector.instance_methods.should include :checkpoint
   end
 

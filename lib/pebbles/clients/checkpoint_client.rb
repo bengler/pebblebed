@@ -6,19 +6,21 @@ module Pebbles
       @identity = get("/identities/me")[:identity]
     end
 
-    def to_cache_key(id)
+    def cache_key_for_identity_id(id)
       "identity:#{id}"
     end
 
+    # Given a list of identity IDs it returns each identity or an empty hash for identities that doesnt exists.
+    # If pebbles are configured with memcached, results will be cached.
+    # Params: ids a list of identities
     def find_identities(ids)
 
-      result = []
+      result = {}
       uncached = ids
 
       if Pebbles.memcached
-        cache_keys = ids.collect {|i| to_cache_key i}
-        result = Hash[Pebbles.memcached.get_multi(*cache_keys).map do |key, value|
-                  identity = DeepStruct.wrap(Yajl::Parser.parse(value)) unless value.nil?
+        cache_keys = ids.collect {|id| cache_key_for_identity_id(id) }
+        result = Hash[Pebbles.memcached.get_multi(*cache_keys).map do |key, identity|
                   /identity:(?<id>\d+)/ =~ key # yup, this is ugly, but an easy hack to get the actual identity id we are trying to retrieve
                   [id.to_i, identity]
                 end]
@@ -26,15 +28,14 @@ module Pebbles
       end
 
       if uncached.size > 0
-        request = get("/identities/#{uncached.join(',')}#{',' unless uncached.size > 1}")
-        uncached.each do |id|
-          found = request.identities.find {|i| i.identity.respond_to?(:id) && i.identity.id == id}
-          identity = found && found.identity || nil
+        request = get("/identities/#{uncached.join(',')},")
+        uncached.each_with_index do |id, i|
+          identity = request.identities[i].identity.unwrap
           result[id] = identity
-          Pebbles.memcached.set(to_cache_key(id), identity.try(:to_json), ttl=60*15) if Pebbles.memcached
+          Pebbles.memcached.set(cache_key_for_identity_id(id), identity, ttl=60*15) if Pebbles.memcached
         end
       end
-      return DeepStruct.wrap(result)
+      return DeepStruct.wrap(ids.collect {|id| result[id]})
     end
 
     def god?
