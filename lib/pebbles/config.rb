@@ -4,8 +4,8 @@ module Pebbles
       Pebbles.host = value
     end
 
-    def redis(value)
-      Pebbles.redis = value
+    def memcached(value)
+      Pebbles.memcached = value
     end
 
     def service(name, options = {})
@@ -34,12 +34,12 @@ module Pebbles
     @host = value
   end
 
-  def self.redis
-    @redis
+  def self.memcached
+    @memcached
   end
 
-  def self.redis=(value)
-    @redis = value
+  def self.memcached=(value)
+    @memcached = value
   end
 
   def self.version_of(service)
