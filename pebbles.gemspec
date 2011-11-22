@@ -29,6 +29,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "i18n"
   s.add_runtime_dependency "activesupport"
 
-  s.add_development_dependency "rack"
-  s.add_development_dependency "servolux"
+  s.add_runtime_dependency "rack"
+  s.add_runtime_dependency "servolux"
 end
