@@ -21,7 +21,6 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   s.add_development_dependency "rspec"
   s.add_runtime_dependency "deepstruct"
-  s.add_runtime_dependency "rack-streaming-proxy"
   s.add_runtime_dependency "curb"
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "queryparams"
@@ -29,4 +28,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "nokogiri"
   s.add_runtime_dependency "i18n"
   s.add_runtime_dependency "activesupport"
+
+  s.add_development_dependency "rack"
+  s.add_development_dependency "servolux"
 end

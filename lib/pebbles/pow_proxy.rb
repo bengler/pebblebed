@@ -1,7 +1,9 @@
 # Rack middleware to proxy pebble-queries to the right service as mounted in pow 
 # (for development only! use ha-proxy in production)
 
-require 'rack/streaming_proxy'
+require 'pebbles/pow_proxy/streaming_proxy'
+require 'pebbles/pow_proxy/proxy_request'
+
 
 module Pebbles
   class PowProxy < Rack::StreamingProxy
