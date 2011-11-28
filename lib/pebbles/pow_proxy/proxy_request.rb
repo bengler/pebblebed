@@ -17,12 +17,12 @@
       if proxy_request.request_body_permitted? and request.body
         proxy_request.body_stream = request.body
         proxy_request.content_length = request.content_length
-        proxy_request.content_type = request.content_type
+        proxy_request.content_type = request.content_type if request.content_type
       end
 
       %w(Accept Accept-Encoding Accept-Charset
         X-Requested-With Referer User-Agent Cookie
-        Authorization Content-Type
+        Authorization Content-Type X-Http-Method-Override
         ).each do |header|
         key = "HTTP_#{header.upcase.gsub('-', '_')}"
         proxy_request[header] = request.env[key] if request.env[key]
