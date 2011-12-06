@@ -1,8 +1,8 @@
 require 'spec_helper'
 
-describe Pebbles::Uid do
+describe Pebblebed::Uid do
   it "parses a full uid correctly" do
-    uid = Pebbles::Uid.new("klass:path$oid")
+    uid = Pebblebed::Uid.new("klass:path$oid")
     uid.klass.should eq "klass"
     uid.path.should eq "path"
     uid.oid.should eq "oid"
@@ -10,7 +10,7 @@ describe Pebbles::Uid do
   end
 
   it "parses an uid with no oid correctly" do
-    uid = Pebbles::Uid.new("klass:path")
+    uid = Pebblebed::Uid.new("klass:path")
     uid.klass.should eq "klass"
     uid.path.should eq "path"
     uid.oid.should be_nil
@@ -18,7 +18,7 @@ describe Pebbles::Uid do
   end
 
   it "parses an uid with no path correctly" do
-    uid = Pebbles::Uid.new("klass:$oid")
+    uid = Pebblebed::Uid.new("klass:$oid")
     uid.klass.should eq "klass"
     uid.path.should be_nil
     uid.oid.should eq "oid"
@@ -26,51 +26,51 @@ describe Pebbles::Uid do
   end
 
   it "raises an exception when you try to create an invalid uid" do
-    -> { Pebbles::Uid.new("!:$298") }.should raise_error Pebbles::InvalidUid
+    -> { Pebblebed::Uid.new("!:$298") }.should raise_error Pebblebed::InvalidUid
   end
 
   it "raises an exception when you modify an uid with an invalid value" do
-    uid = Pebbles::Uid.new("klass:path$oid")
-    -> { uid.klass = "!" }.should raise_error Pebbles::InvalidUid
-    -> { uid.path = "..." }.should raise_error Pebbles::InvalidUid
-    -> { uid.oid = "(/&%$" }.should raise_error Pebbles::InvalidUid
+    uid = Pebblebed::Uid.new("klass:path$oid")
+    -> { uid.klass = "!" }.should raise_error Pebblebed::InvalidUid
+    -> { uid.path = "..." }.should raise_error Pebblebed::InvalidUid
+    -> { uid.oid = "(/&%$" }.should raise_error Pebblebed::InvalidUid
   end
 
   it "rejects invalid labels for klass and oid" do
-    Pebbles::Uid.valid_klass?("abc123").should be_true
-    Pebbles::Uid.valid_klass?("abc123!").should be_false
-    Pebbles::Uid.valid_klass?("").should be_false
-    Pebbles::Uid.valid_oid?("abc123").should be_true
-    Pebbles::Uid.valid_oid?("abc123!").should be_false
-    Pebbles::Uid.valid_oid?("abc 123").should be_false
-    Pebbles::Uid.valid_oid?("").should be_false
+    Pebblebed::Uid.valid_klass?("abc123").should be_true
+    Pebblebed::Uid.valid_klass?("abc123!").should be_false
+    Pebblebed::Uid.valid_klass?("").should be_false
+    Pebblebed::Uid.valid_oid?("abc123").should be_true
+    Pebblebed::Uid.valid_oid?("abc123!").should be_false
+    Pebblebed::Uid.valid_oid?("abc 123").should be_false
+    Pebblebed::Uid.valid_oid?("").should be_false
   end
 
   it "rejects invalid paths" do
-    Pebbles::Uid.valid_path?("abc123").should be_true
-    Pebbles::Uid.valid_path?("abc.123").should be_true
-    Pebbles::Uid.valid_path?("").should be_true
-    Pebbles::Uid.valid_path?("abc!.").should be_false
-    Pebbles::Uid.valid_path?(".").should be_false
-    Pebbles::Uid.valid_path?("ab. 123").should be_false
+    Pebblebed::Uid.valid_path?("abc123").should be_true
+    Pebblebed::Uid.valid_path?("abc.123").should be_true
+    Pebblebed::Uid.valid_path?("").should be_true
+    Pebblebed::Uid.valid_path?("abc!.").should be_false
+    Pebblebed::Uid.valid_path?(".").should be_false
+    Pebblebed::Uid.valid_path?("ab. 123").should be_false
   end
 
   it "knows how to parse in place" do
-    Pebbles::Uid.parse("klass:path$oid").should eq ['klass', 'path', 'oid']
-    Pebbles::Uid.parse("post:this.is.a.path.to$object_id").should eq ['post', 'this.is.a.path.to', 'object_id']
-    Pebbles::Uid.parse("post:$object_id").should eq ['post', nil, 'object_id']
+    Pebblebed::Uid.parse("klass:path$oid").should eq ['klass', 'path', 'oid']
+    Pebblebed::Uid.parse("post:this.is.a.path.to$object_id").should eq ['post', 'this.is.a.path.to', 'object_id']
+    Pebblebed::Uid.parse("post:$object_id").should eq ['post', nil, 'object_id']
   end
 
   it "knows the valid uids from the invalid ones" do
-    Pebbles::Uid.valid?("F**ing H%$#!!!").should be_false
-    Pebbles::Uid.valid?("").should be_false
-    Pebbles::Uid.valid?("bang:").should be_false
-    Pebbles::Uid.valid?(":bang").should be_false
-    Pebbles::Uid.valid?(":bang$paff").should be_false
-    Pebbles::Uid.valid?("$paff").should be_false
-    Pebbles::Uid.valid?("a:b.c.d$e").should be_true
-    Pebbles::Uid.valid?("a:$e").should be_true
-    Pebbles::Uid.valid?("a:b.c.d").should be_true
+    Pebblebed::Uid.valid?("F**ing H%$#!!!").should be_false
+    Pebblebed::Uid.valid?("").should be_false
+    Pebblebed::Uid.valid?("bang:").should be_false
+    Pebblebed::Uid.valid?(":bang").should be_false
+    Pebblebed::Uid.valid?(":bang$paff").should be_false
+    Pebblebed::Uid.valid?("$paff").should be_false
+    Pebblebed::Uid.valid?("a:b.c.d$e").should be_true
+    Pebblebed::Uid.valid?("a:$e").should be_true
+    Pebblebed::Uid.valid?("a:b.c.d").should be_true
   end
 
 end

@@ -1,6 +1,6 @@
 require 'active_support/inflector'
 
-module Pebbles 
+module Pebblebed 
   class Connector 
     def initialize(key = nil, url_opts = {})
       @key = key
@@ -10,13 +10,13 @@ module Pebbles
 
     def [](service)
       client_class = self.class.client_class_for(service)
-      (@clients[service.to_sym] ||= client_class.new(@key, Pebbles.root_url_for(service.to_s, @url_opts)))
+      (@clients[service.to_sym] ||= client_class.new(@key, Pebblebed.root_url_for(service.to_s, @url_opts)))
     end
 
     def self.client_class_for(service)
       class_name = ActiveSupport::Inflector.classify(service)+'Client'
       begin
-        Pebbles.const_get(class_name)
+        Pebblebed.const_get(class_name)
       rescue NameError
         GenericClient
       end

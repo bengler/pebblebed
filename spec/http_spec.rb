@@ -1,12 +1,12 @@
 require 'spec_helper'
 
-describe Pebbles::Http do 
+describe Pebblebed::Http do 
   it "knows how to pack params into a http query string" do
-    Pebbles::Http.send(:url_with_params, URI("/dingo/"), {a:1}).should eq "/dingo/?a=1"
+    Pebblebed::Http.send(:url_with_params, URI("/dingo/"), {a:1}).should eq "/dingo/?a=1"
   end
 
   it "knows how to combine url and parmas with results of pathbuilder" do
-    url, params = Pebbles::Http.send(:url_and_params_from_args, URI("http://example.org/api"), {a:1}) do
+    url, params = Pebblebed::Http.send(:url_and_params_from_args, URI("http://example.org/api"), {a:1}) do
       foo.bar(:b => 2)
     end
     params.should eq(:a => 1, :b => 2)
@@ -14,7 +14,7 @@ describe Pebbles::Http do
   end
 
   it "raises an exception if there is a http-error" do
-    -> { Pebbles::Http.send(:handle_http_errors, DeepStruct.wrap(status:400, url:"/foobar", body:"Oh noes")) }.should raise_error Pebbles::HttpError
+    -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status:400, url:"/foobar", body:"Oh noes")) }.should raise_error Pebblebed::HttpError
   end
 
 end

@@ -1,6 +1,6 @@
 require 'deepstruct'
 
-module Pebbles
+module Pebblebed
   class GenericClient
     def initialize(session_key, root_url)
       @root_url = root_url  
@@ -10,7 +10,7 @@ module Pebbles
 
     def perform(method, url = '', params = {}, &block)
       begin
-        result = Pebbles::Http.send(method, service_url(url), service_params(params), &block)
+        result = Pebblebed::Http.send(method, service_url(url), service_params(params), &block)
         return DeepStruct.wrap(Yajl::Parser.parse(result.body))        
       rescue Yajl::ParseError
         return result.body

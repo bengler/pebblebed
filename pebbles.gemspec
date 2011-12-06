@@ -1,17 +1,17 @@
 # -*- encoding: utf-8 -*-
 $:.push File.expand_path("../lib", __FILE__)
-require "pebbles/version"
+require "pebblebed/version"
 
 Gem::Specification.new do |s|
-  s.name        = "pebbles"
-  s.version     = Pebbles::VERSION
+  s.name        = "pebblebed"
+  s.version     = Pebblebed::VERSION
   s.authors     = ["Katrina Owen", "Simen Svale Skogsrud"]
   s.email       = ["katrina@bengler.no", "simen@bengler.no"]
   s.homepage    = ""
-  s.summary     = %q{Development tools for working with Pebbles}
-  s.description = %q{Development tools for working with Pebbles}
+  s.summary     = %q{Development tools for working with Pebblebed}
+  s.description = %q{Development tools for working with Pebblebed}
 
-  s.rubyforge_project = "pebbles"
+  s.rubyforge_project = "pebblebed"
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
@@ -30,7 +30,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "nokogiri"
   s.add_runtime_dependency "i18n"
   s.add_runtime_dependency "activesupport"
+  s.add_runtime_dependency "simplecov"
 
-  s.add_runtime_dependency "rack"
-  s.add_runtime_dependency "servolux"
 end

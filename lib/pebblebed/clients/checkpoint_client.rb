@@ -1,5 +1,5 @@
-module Pebbles 
-  class CheckpointClient < Pebbles::GenericClient
+module Pebblebed 
+  class CheckpointClient < Pebblebed::GenericClient
     def me
       return @identity if @identity_checked
       @identity_checked = true
@@ -18,9 +18,9 @@ module Pebbles
       result = {}
       uncached = ids
 
-      if Pebbles.memcached
+      if Pebblebed.memcached
         cache_keys = ids.collect {|id| cache_key_for_identity_id(id) }
-        result = Hash[Pebbles.memcached.get_multi(*cache_keys).map do |key, identity|
+        result = Hash[Pebblebed.memcached.get_multi(*cache_keys).map do |key, identity|
                   /identity:(?<id>\d+)/ =~ key # yup, this is ugly, but an easy hack to get the actual identity id we are trying to retrieve
                   [id.to_i, identity]
                 end]
@@ -32,7 +32,7 @@ module Pebbles
         uncached.each_with_index do |id, i|
           identity = request.identities[i].identity.unwrap
           result[id] = identity
-          Pebbles.memcached.set(cache_key_for_identity_id(id), identity, ttl=60*15) if Pebbles.memcached
+          Pebblebed.memcached.set(cache_key_for_identity_id(id), identity, ttl=60*15) if Pebblebed.memcached
         end
       end
       return DeepStruct.wrap(ids.collect {|id| result[id]})

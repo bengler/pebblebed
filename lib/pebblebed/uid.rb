@@ -1,4 +1,4 @@
-module Pebbles
+module Pebblebed
   class InvalidUid < StandardError; end
   class Uid
     def initialize(uid)
@@ -64,7 +64,7 @@ module Pebbles
     end
 
     def inspect
-      "#<Pebbles::Uid '#{to_s}'>"
+      "#<Pebblebed::Uid '#{to_s}'>"
     end
 
     def to_s

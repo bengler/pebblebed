@@ -1,15 +1,15 @@
-module Pebbles
+module Pebblebed
   class Builder
     def host(value)
-      Pebbles.host = value
+      Pebblebed.host = value
     end
 
     def memcached(value)
-      Pebbles.memcached = value
+      Pebblebed.memcached = value
     end
 
     def service(name, options = {})
-      Pebbles.require_service(name, options)
+      Pebblebed.require_service(name, options)
     end
   end
 
@@ -19,7 +19,7 @@ module Pebbles
 
   def self.require_service(name, options = {})
     (@services ||= {})[name.to_sym] = options
-    Pebbles::Connector.class_eval <<-END
+    Pebblebed::Connector.class_eval <<-END
       def #{name}
         self["#{name}"]
       end
@@ -27,7 +27,7 @@ module Pebbles
   end
 
   def self.host
-    @host || 'pebbles.dev'
+    @host
   end
 
   def self.host=(value)

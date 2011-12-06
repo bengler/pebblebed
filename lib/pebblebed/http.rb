@@ -8,7 +8,7 @@ require 'nokogiri'
 require 'pathbuilder'
 require 'active_support'
 
-module Pebbles
+module Pebblebed
   class HttpError < Exception; end
 
   class ClientError < HttpError; end

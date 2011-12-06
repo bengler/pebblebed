@@ -1,27 +1,27 @@
 require 'spec_helper'
 
-describe Pebbles do
+describe Pebblebed do
   it "has a nice dsl that configures stuff" do
-    Pebbles.config do
+    Pebblebed.config do
       host "example.org"
       memcached $memcached
       service :checkpoint
     end
 
-    Pebbles.host.should eq "example.org"
-    Pebbles.memcached.should eq $memcached
-    Pebbles::Connector.instance_methods.should include :checkpoint
+    Pebblebed.host.should eq "example.org"
+    Pebblebed.memcached.should eq $memcached
+    Pebblebed::Connector.instance_methods.should include :checkpoint
   end
 
   it "can calculate the root uri of any pebble" do
-    Pebbles.config do
+    Pebblebed.config do
       service :checkpoint
       service :foobar, :version => 2
     end
-    Pebbles.host = "example.org"
-    Pebbles.root_url_for(:checkpoint).to_s.should eq "http://example.org/api/checkpoint/v1/"
-    Pebbles.root_url_for(:checkpoint, :host => 'checkpoint.dev').to_s.should eq "http://checkpoint.dev/api/checkpoint/v1/"
-    Pebbles.root_url_for(:foobar).to_s.should eq "http://example.org/api/foobar/v2/"
+    Pebblebed.host = "example.org"
+    Pebblebed.root_url_for(:checkpoint).to_s.should eq "http://example.org/api/checkpoint/v1/"
+    Pebblebed.root_url_for(:checkpoint, :host => 'checkpoint.dev').to_s.should eq "http://checkpoint.dev/api/checkpoint/v1/"
+    Pebblebed.root_url_for(:foobar).to_s.should eq "http://example.org/api/foobar/v2/"
   end
 
 end

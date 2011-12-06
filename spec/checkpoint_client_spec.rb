@@ -1,9 +1,9 @@
 require 'spec_helper'
 require 'json'
 
-describe Pebbles::CheckpointClient do
+describe Pebblebed::CheckpointClient do
 
-  let(:checkpoint_client) { Pebbles::Connector.new('session_key')[:checkpoint] }
+  let(:checkpoint_client) { Pebblebed::Connector.new('session_key')[:checkpoint] }
 
   describe "me" do
     let(:canned_response_for_me) {
@@ -11,9 +11,9 @@ describe Pebbles::CheckpointClient do
         }
 
     it "returns current user identity upon request and caches it as an instance variable" do
-      checkpoint_client = Pebbles::Connector.new('session_key')[:checkpoint]
+      checkpoint_client = Pebblebed::Connector.new('session_key')[:checkpoint]
 
-      Pebbles::Http.should_receive(:get) { |url|
+      Pebblebed::Http.should_receive(:get) { |url|
                 url.path.should match("/identities/me")
                 canned_response_for_me
               }.once
@@ -22,8 +22,8 @@ describe Pebbles::CheckpointClient do
     end
 
     it "tells us whether we are dealing with god allmighty himself or just another average joe" do
-      checkpoint_client = Pebbles::Connector.new('session_key')[:checkpoint]
-      Pebbles::Http.should_receive(:get) { |url|
+      checkpoint_client = Pebblebed::Connector.new('session_key')[:checkpoint]
+      Pebblebed::Http.should_receive(:get) { |url|
                 url.path.should match("/identities/me")
                 canned_response_for_me
               }.once
@@ -33,7 +33,7 @@ describe Pebbles::CheckpointClient do
 
   describe "cache_key_for_identity_id" do
     it "creates a nice looking cache key for memcache" do
-      checkpoint_client = Pebbles::Connector.new('session_key')[:checkpoint]
+      checkpoint_client = Pebblebed::Connector.new('session_key')[:checkpoint]
       checkpoint_client.cache_key_for_identity_id(2).should eq "identity:2"
     end
   end
@@ -49,14 +49,14 @@ describe Pebbles::CheckpointClient do
 
     describe "without memcache configured" do
       before(:each) do
-        Pebbles.config do
+        Pebblebed.config do
           host "checkpoint.dev"
           service :checkpoint
         end
       end
 
       it "issues an http request every time" do
-        Pebbles::Http.should_receive(:get).twice.and_return canned_response
+        Pebblebed::Http.should_receive(:get).twice.and_return canned_response
         checkpoint_client.find_identities([1, 2])
         checkpoint_client.find_identities([1, 2])
       end
@@ -64,7 +64,7 @@ describe Pebbles::CheckpointClient do
 
     describe "with memcached configured" do
       before(:each) do
-        Pebbles.config do
+        Pebblebed.config do
           host "checkpoint.dev"
           memcached $memcached
           service :checkpoint
@@ -72,7 +72,7 @@ describe Pebbles::CheckpointClient do
       end
 
       it "issues an http request and caches it" do
-        Pebbles::Http.should_receive(:get).once.and_return(canned_response)
+        Pebblebed::Http.should_receive(:get).once.and_return(canned_response)
         checkpoint_client.find_identities([1, 2])
         checkpoint_client.find_identities([1, 2])
 
@@ -81,7 +81,7 @@ describe Pebbles::CheckpointClient do
       end
 
       it "returns exactly the same data no matter if it is cached or originating from a request" do
-        Pebbles::Http.should_receive(:get).once.and_return(canned_response)
+        Pebblebed::Http.should_receive(:get).once.and_return(canned_response)
 
         http_requested_result = checkpoint_client.find_identities([1, 2, 3])
         cached_result = checkpoint_client.find_identities([1, 2, 3])
@@ -90,13 +90,13 @@ describe Pebbles::CheckpointClient do
       end
 
       it "issues a request only for not previously cached identities" do
-        Pebbles::Http.should_receive(:get) { |url|
+        Pebblebed::Http.should_receive(:get) { |url|
           url.path.should match("/identities/1,2,4")
           canned_response
         }.once
         checkpoint_client.find_identities([1, 2, 4])
 
-        Pebbles::Http.should_receive(:get) { |url|
+        Pebblebed::Http.should_receive(:get) { |url|
           url.path.should match("/identities/3,") # Note the extra comma. Will ensure that a list is returned
           canned_response
         }.once
@@ -104,7 +104,7 @@ describe Pebbles::CheckpointClient do
       end
 
       it "will always return identities in the order they are requested" do
-        Pebbles::Http.should_receive(:get).once.and_return(canned_response)
+        Pebblebed::Http.should_receive(:get).once.and_return(canned_response)
 
         checkpoint_client.find_identities([1, 2, 3, 4])
         identities = checkpoint_client.find_identities([4, 3, 2, 1])
