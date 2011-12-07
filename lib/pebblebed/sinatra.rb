@@ -36,10 +36,17 @@ module Sinatra
 
     def self.registered(app)
       app.helpers(Sinatra::Pebblebed::Helpers)
+      app.get "/ping" do
+        "{\"name\":#{(app.service_name || 'undefined').inspect}}"
+      end
     end
 
     def declare_pebbles(&block)
       Pebbles.config(&block)
+    end
+
+    def i_am(service_name)
+      set :service_name, service_name
     end
 
   end
