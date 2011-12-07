@@ -10,6 +10,7 @@ module Pebblebed
 
     def perform(method, url = '', params = {}, &block)
       begin
+        $stderr.puts [method, service_url(url), params].inspect
         result = Pebblebed::Http.send(method, service_url(url), service_params(params), &block)
         return DeepStruct.wrap(Yajl::Parser.parse(result.body))        
       rescue Yajl::ParseError

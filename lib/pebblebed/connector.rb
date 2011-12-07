@@ -20,6 +20,11 @@ module Pebblebed
     def quorum(services = nil, session_key = nil)
       QuorumClient.new(services || Pebblebed.services, session_key)
     end
+  
+      
+    def parts
+      @parts ||= Pebblebed::Parts.new(self)
+    end
 
     def self.client_class_for(service)
       class_name = ActiveSupport::Inflector.classify(service)+'Client'

@@ -6,6 +6,7 @@ module Pebblebed
   class QuorumClient < AbstractClient
     def initialize(services, session_key)
       @clients = Hash[services.map do |service|
+        $stderr.puts Pebblebed.root_url_for(service)
         [service, Pebblebed::GenericClient.new(session_key, Pebblebed.root_url_for(service))]
       end]
     end

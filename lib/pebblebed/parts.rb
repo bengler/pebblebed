@@ -11,14 +11,17 @@ class Pebblebed::Parts
 
   @composition_strategies = {}
 
-  def initialize
+  def initialize(connector)
     @composition_strategy = :ssi # <- It's the best! Use Nginx with SSI
     @preloadable = {} # <- A cache to remember which parts are preloadable
+    @connector = connector
   end
 
   # All part manifests for all configured pebbles as a hash of DeepStructs
   def manifests
-    @manifests ||= Pebblebed::Connector.new.quorum.get("/parts")
+    @manifests ||= @connector.quorum.get("/parts")
+    @manifests.each { |k,v| @manifests.delete(k) if v.is_a?(Pebblebed::HttpError) }
+    @manifests
   end
 
   def reload_manifest
@@ -38,6 +41,18 @@ class Pebblebed::Parts
      "</div>"].join
   end
 
+  def stylesheet_urls
+    manifests.keys.map do |service|
+      @connector[service].service_url("/parts/assets/parts.css")
+    end
+  end
+
+  def javascript_urls
+    manifests.keys.map do |service|
+      @connector[service].service_url("/parts/assets/parts.js")
+    end
+  end
+
   # Register a new composition strategy handler. The block must accept two parameters:
   # |url, params| and is expected to return whatever markup is needed to make it happen.
   def self.register_composition_strategy(name, &block)
@@ -53,20 +68,26 @@ class Pebblebed::Parts
 
   def raw_part_is_preloadable?(partspec)
     service, part = self.class.parse_partspec(partspec)
+    $stderr.puts manifests.inspect
     return false unless service = manifests[service.to_sym]
     return false unless part_record = service[part]
-    return false if part_record.is_a?(HttpError)
+    return false if part_record.is_a?(::Pebblebed::HttpError)
     return part_record.part.preloadable
   end  
 
   def composition_markup_from_partspec(partspec, params)
     return '' unless preloadable?(partspec)
     service, part = self.class.parse_partspec(partspec)
-    composition_markup(Pebblebed.root_url_for(service)+"/parts/#{part}", params)
+    composition_markup(
+      @connector[service].service_url("/parts/#{part}"), params)
+  end
+
+  def self.composition_strategies
+    @composition_strategies
   end
 
   def composition_markup(url, params)
-    @composition_strategies[@composition_strategy].call(url, params)
+    self.class.composition_strategies[@composition_strategy].call(url, params)
   end
 
   def self.parse_partspec(partspec)
@@ -76,18 +97,7 @@ class Pebblebed::Parts
 
   # Create a string of data-attributes from a hash
   def self.data_attributes(hash)
-    hash.map { |k,v| "data-#{k.gsub('_', '-')}=\"#{v}\"" }.join(' ')
-  end
-end
-
-# -------------------------------------------------------------------------------
-
-# Add an accessor to Pebblebed so you can write something like Pebblebed.parts.markup('vanilla.bulletin', optionshash)
-# to get the markup for a given part.
-
-module Pebblebed
-  def self.parts
-    @parts ||= Pebblebed::Parts.new
+    hash.map { |k,v| "data-#{k.to_s.gsub('_', '-')}=\"#{v}\"" }.join(' ')
   end
 end
 
@@ -95,12 +105,12 @@ end
 
 # SSI (Nginx): http://wiki.nginx.org/HttpSsiModule
 Pebblebed::Parts.register_composition_strategy :ssi do |url, params|
-  "<!--# include virtual=\"#{url}?#{QueryParams.encode(params || {})}\" -->"
+  "<!--# include virtual=\"#{URI.parse(url.to_s).path}?#{QueryParams.encode(params || {})}\" -->"
 end
 
 # ESI (Varnish): https://www.varnish-cache.org/trac/wiki/ESIfeatures
 Pebblebed::Parts.register_composition_strategy :esi do |url, params|
-  "<esi:include src=\"#{url}?#{QueryParams.encode(params || {})}\"\/>"
+  "<esi:include src=\"#{URI.parse(url.to_s).path}?#{QueryParams.encode(params || {})}\"\/>"
 end
 
 # Just fetches the content and returns it. ONLY FOR DEVELOPMENT

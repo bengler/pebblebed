@@ -6,13 +6,27 @@ module Sinatra
     module Helpers      
       # Render the markup for a part. A partspec takes the form
       # "<kit>.<partname>", e.g. "base.post"
-      def part(partspec, params)
-        ::Pebblebed.parts.markup(partspec, params)
+      def part(partspec, params = {})
+        params[:session] ||= current_session
+        pebbles.parts.markup(partspec, params)
       end
 
-      def checkpoint_session
+      def parts_script_include_tags
+        @script_include_tags ||= pebbles.parts.javascript_urls.map do |url|
+          "<script src=\"#{url.to_s}\"></script>"
+        end.join
+      end
+
+      def parts_stylesheet_include_tags
+        @stylesheet_include_tags ||= pebbles.parts.stylesheet_urls.map do |url|
+          "<link rel=\"stylesheet\" type=\"text/css\" media=\"all\" href=\"#{url.to_s}\">"
+        end.join
+      end
+
+      def current_session
         params[:session] || request.cookies['checkpoint.session']
       end
+      alias :checkpoint_session :current_session 
 
       def pebbles
         @pebbles ||= ::Pebblebed::Connector.new(checkpoint_session, :host => request.host)

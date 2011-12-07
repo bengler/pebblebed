@@ -52,6 +52,6 @@ module Pebblebed
   end
 
   def self.root_url_for(service, url_opts={})
-    URI("http://#{url_opts[:host] || host}/api/#{service}/v#{version_of(service)}/")
+    URI("http://#{url_opts[:host] || self.host}/api/#{service}/v#{version_of(service)}/")
   end
 end
