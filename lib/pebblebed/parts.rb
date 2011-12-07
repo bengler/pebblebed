@@ -21,6 +21,10 @@ class Pebblebed::Parts
     @manifests ||= Pebblebed::Connector.new.quorum.get("/parts")
   end
 
+  def reload_manifest
+    @manifests = nil
+  end
+
   # The strategy for composing multiple parts into a page. Default: `:ssi`
   def composition_strategy=(value)
     raise ArgumentError, "Unknown composition strategy '#{value}'" unless composition_strategies.keys.include?(value)
@@ -76,6 +80,8 @@ class Pebblebed::Parts
   end
 end
 
+# -------------------------------------------------------------------------------
+
 # Add an accessor to Pebblebed so you can write something like Pebblebed.parts.markup('vanilla.bulletin', optionshash)
 # to get the markup for a given part.
 
@@ -85,9 +91,11 @@ module Pebblebed
   end
 end
 
+# -------------------------------------------------------------------------------
+
 # SSI (Nginx): http://wiki.nginx.org/HttpSsiModule
 Pebblebed::Parts.register_composition_strategy :ssi do |url, params|
-    "<!--# include virtual=\"#{url}?#{QueryParams.encode(params || {})}\" -->"
+  "<!--# include virtual=\"#{url}?#{QueryParams.encode(params || {})}\" -->"
 end
 
 # ESI (Varnish): https://www.varnish-cache.org/trac/wiki/ESIfeatures
