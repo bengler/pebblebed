@@ -38,7 +38,7 @@ module Sinatra
     def self.registered(app)
       app.helpers(Sinatra::Pebblebed::Helpers)
       app.get "/ping" do
-        "{\"name\":#{(app.service_name || 'undefined').inspect}}"
+        "{\"name\":#{(app.service_name || 'undefined').to_s.inspect}}"
       end
     end
 
