@@ -1,7 +1,7 @@
 require 'deepstruct'
 
 module Pebblebed
-  class GenericClient
+  class GenericClient < AbstractClient
     def initialize(session_key, root_url)
       @root_url = root_url  
       @root_url = URI(@root_url) unless @root_url.is_a?(URI::HTTP)
@@ -15,18 +15,6 @@ module Pebblebed
       rescue Yajl::ParseError
         return result.body
       end
-    end
-
-    def get(*args, &block)
-      perform(:get, *args, &block)
-    end
-
-    def post(*args, &block)
-      perform(:post, *args, &block)
-    end
-
-    def delete(*args, &block)
-      perform(:delete, *args, &block)
     end
 
     def service_url(url)

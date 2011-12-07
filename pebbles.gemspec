@@ -21,15 +21,16 @@ Gem::Specification.new do |s|
   # specify any dependencies here; for example:
   s.add_development_dependency "rspec"
   s.add_development_dependency "rake"
+  s.add_development_dependency "simplecov"
   
   s.add_runtime_dependency "deepstruct"
   s.add_runtime_dependency "curb"
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "queryparams"
+  s.add_runtime_dependency "futurevalue"
   s.add_runtime_dependency "pathbuilder"
   s.add_runtime_dependency "nokogiri"
-  s.add_runtime_dependency "i18n"
+  # s.add_runtime_dependency "i18n"
   s.add_runtime_dependency "activesupport"
-  s.add_runtime_dependency "simplecov"
 
 end

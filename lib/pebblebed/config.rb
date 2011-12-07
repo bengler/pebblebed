@@ -42,6 +42,10 @@ module Pebblebed
     @memcached = value
   end
 
+  def self.services
+    @services.keys
+  end
+
   def self.version_of(service)
     return 1 unless @services && @services[service.to_sym]
     @services[service.to_sym][:version] || 1
