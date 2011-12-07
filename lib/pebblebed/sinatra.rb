@@ -1,4 +1,5 @@
 # Extends Sinatra for maximum pebble pleasure
+require 'pebblebed'
 
 module Sinatra
   module Pebblebed
@@ -6,7 +7,7 @@ module Sinatra
       # Render the markup for a part. A partspec takes the form
       # "<kit>.<partname>", e.g. "base.post"
       def part(partspec, params)
-        Pebblebed.parts.markup(partspec, params)
+        ::Pebblebed.parts.markup(partspec, params)
       end
 
       def checkpoint_session
@@ -14,7 +15,7 @@ module Sinatra
       end
 
       def pebbles
-        @pebbles ||= Pebbles::Connector.new(checkpoint_session, :host => request.host)
+        @pebbles ||= ::Pebblebed::Connector.new(checkpoint_session, :host => request.host)
       end
 
       def current_identity
@@ -42,7 +43,7 @@ module Sinatra
     end
 
     def declare_pebbles(&block)
-      Pebbles.config(&block)
+      ::Pebblebed.config(&block)
     end
 
     def i_am(service_name)
