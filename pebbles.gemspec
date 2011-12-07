@@ -30,7 +30,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "futurevalue"
   s.add_runtime_dependency "pathbuilder"
   s.add_runtime_dependency "nokogiri"
-  # s.add_runtime_dependency "i18n"
+  s.add_runtime_dependency "i18n"
   s.add_runtime_dependency "activesupport"
 
 end

@@ -24,7 +24,7 @@ module Pebblebed
         response
       end
       # Unwrap future values and thereby joining all threads
-      Hash[results.map { |service, response| [service, response.value]}]
+      Hash[results.map{|service, response| [service, response.value]}]
     end
   end
 end
