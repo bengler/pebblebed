@@ -29,9 +29,13 @@ module Sinatra
       end
 
       def require_god
-        unless current_identity.try(:god)
-          halt 403, "Current identity is not a god."
-        end
+        require_identity
+        halt 403, "Current identity #{current_identity.id} is not god" unless current_identity.god
+      end
+
+      def require_parameters(parameters, *keys)
+        missing = keys.map(&:to_s) - (parameters ? parameters.keys : [])
+        halt 409, "missing parameters: #{missing.join(', ')}" unless missing.empty?
       end
     end
 
