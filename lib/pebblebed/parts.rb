@@ -76,8 +76,13 @@ class Pebblebed::Parts
   end
 end
 
+# Add an accessor to Pebblebed so you can write something like Pebblebed.parts.markup('vanilla.bulletin', optionshash)
+# to get the markup for a given part.
+
 module Pebblebed
   def self.parts
+    @parts ||= Pebblebed::Parts.new
+  end
 end
 
 # SSI (Nginx): http://wiki.nginx.org/HttpSsiModule
