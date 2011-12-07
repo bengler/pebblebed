@@ -97,7 +97,9 @@ class Pebblebed::Parts
 
   # Create a string of data-attributes from a hash
   def self.data_attributes(hash)
-    hash.map { |k,v| "data-#{k.to_s.gsub('_', '-')}=\"#{v}\"" }.join(' ')
+    hash = hash.dup
+    hash.select{ |k| k != :session }.
+      map { |k,v| "data-#{k.to_s}=\"#{v}\"" }.join(' ')
   end
 end
 
