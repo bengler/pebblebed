@@ -68,7 +68,6 @@ class Pebblebed::Parts
 
   def raw_part_is_preloadable?(partspec)
     service, part = self.class.parse_partspec(partspec)
-    $stderr.puts manifests.inspect
     return false unless service = manifests[service.to_sym]
     return false unless part_record = service[part]
     return false if part_record.is_a?(::Pebblebed::HttpError)
