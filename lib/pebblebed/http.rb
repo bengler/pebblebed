@@ -47,12 +47,12 @@ module Pebblebed
 
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)      
-      handle_curl_response(Curl::Easy.http_post(url, *(QueryParams.encode(params).split('&'))))
+      handle_curl_response(Curl::Easy.http_post(url.to_s, *(QueryParams.encode(params).split('&'))))
     end
 
     def self.put(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)      
-      handle_curl_response(Curl::Easy.http_put(url, *(QueryParams.encode(params).split('&'))))
+      handle_curl_response(Curl::Easy.http_put(url.to_s, *(QueryParams.encode(params).split('&'))))
     end
 
     def self.delete(url, params, &block)
