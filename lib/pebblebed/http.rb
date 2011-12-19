@@ -19,6 +19,14 @@ module Pebblebed
     def not_found?
       @status_code == 404
     end
+
+    def to_s
+      "#<Pebblebed::HttpError #{@status} #{message}>"
+    end
+
+    def inspect
+      to_s
+    end
   end
 
   module Http
