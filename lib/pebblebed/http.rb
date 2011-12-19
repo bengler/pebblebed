@@ -82,6 +82,7 @@ module Pebblebed
     end
 
     def self.url_and_params_from_args(url, params = nil, &block)
+      url = URI.parse(url) unless url.is_a?(URI)
       if block_given?
         pathbuilder = PathBuilder.new.send(:instance_eval, &block)
         url = url.dup
