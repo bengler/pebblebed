@@ -13,6 +13,14 @@ describe Pebblebed::Http do
     url.to_s.should eq "http://example.org/api/foo/bar"
   end
 
+  it "handles urls as strings" do
+    url, params = Pebblebed::Http.send(:url_and_params_from_args, "http://example.org/api", {a:1}) do
+      foo.bar(:b => 2)
+    end
+    params.should eq(:a => 1, :b => 2)
+    url.to_s.should eq "http://example.org/api/foo/bar"
+  end
+
   it "raises an exception if there is a http-error" do
     -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status:400, url:"/foobar", body:"Oh noes")) }.should raise_error Pebblebed::HttpError
   end

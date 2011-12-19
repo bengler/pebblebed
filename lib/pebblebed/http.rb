@@ -50,6 +50,11 @@ module Pebblebed
       handle_curl_response(Curl::Easy.http_post(url, *(QueryParams.encode(params).split('&'))))
     end
 
+    def self.put(url, params, &block)
+      url, params = url_and_params_from_args(url, params, &block)      
+      handle_curl_response(Curl::Easy.http_put(url, *(QueryParams.encode(params).split('&'))))
+    end
+
     def self.delete(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)      
       handle_curl_response(Curl::Easy.http_delete(url_with_params(url, params)))
@@ -71,7 +76,7 @@ module Pebblebed
       handle_http_errors(CurlResult.new(curl_response))
     end
 
-    def self.url_with_params(url, params)
+    def self.url_with_params(url, params)      
       url.query = QueryParams.encode(params || {})
       url.to_s
     end
