@@ -74,7 +74,7 @@ module Pebblebed
       if result.status >= 400
         errmsg = "Service request to '#{result.url}' failed (#{result.status}):"
         errmsg << extract_error_summary(result.body)
-        raise HttpError.new(result.status, ActiveSupport::SafeBuffer.new(errmsg)) 
+        raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status) 
         # ActiveSupport::SafeBuffer.new is the same as errmsg.html_safe in rails
       end
       result
