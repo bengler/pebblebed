@@ -125,7 +125,7 @@ It will return a hash with each pebble as the key and the result as the value. I
 pebble is a HttpError object with status and message.
 
     
-For some pebbles Pebblebed may furnish a richer client with helper methods. This is implemented by implementing the 
+For some pebbles Pebblebed may furnish a richer client with helper methods. This is implemented by sticking the 
 augmented client in the `/lib/pebblebed/clients` folder and naming the class `Pebblebed::<YourPebbleName>Client`. For
 an example of this see `CheckpointClient` which in addition to the common http-methods provides the method `me` which
 returns the logged in user and `god?` which checs whether she's a god(dess).
