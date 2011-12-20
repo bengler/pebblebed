@@ -28,7 +28,7 @@ In you app:
       i_am :my_pebble
 
       # Declare which pebbles I need to talk to
-      pebbles do 
+      declare_pebbles do 
         service :checkpoint, :version => 1
         service :parlor, :version => 1
       end
