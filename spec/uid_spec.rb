@@ -25,6 +25,15 @@ describe Pebblebed::Uid do
     uid.to_s.should eq "klass:$oid"
   end
 
+  it "can be created using a string or a has as constructor parameter" do
+    uid = Pebblebed::Uid.new :klass => 'klass', :path => 'some.path', :oid => 'oid'
+    uid.to_s.should eq "klass:some.path$oid"
+  end
+
+  it "raises an error if parameter is neither string or hash" do
+    lambda {Pebblebed::Uid.new([])}.should raise_exception
+  end
+
   it "raises an exception when you try to create an invalid uid" do
     -> { Pebblebed::Uid.new("!:$298") }.should raise_error Pebblebed::InvalidUid
   end

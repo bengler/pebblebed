@@ -1,8 +1,14 @@
 module Pebblebed
   class InvalidUid < StandardError; end
   class Uid
-    def initialize(uid)
-      self.klass, self.path, self.oid = self.class.raw_parse(uid)
+    def initialize(args)
+      case args
+        when String
+          self.klass, self.path, self.oid = self.class.raw_parse(args)
+        when Hash
+          self.klass, self.path, self.oid = args[:klass], args[:path], args[:oid]
+        else raise "Invalid argument"
+      end
       raise InvalidUid, "Missing klass in uid" unless self.klass
       raise InvalidUid, "A valid uid must specify either path or oid" unless self.path || self.oid
     end
