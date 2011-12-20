@@ -60,6 +60,30 @@ Other helper methods provided by this extension:
     require_parameters(parameters, *keys)   # Halts with 409 if the at least one of the provided keys is not in the params-hash
 
 
+Not Sinatra
+===========
+
+If you want to talk to pebbles from other ruby projects, you may use the Pebblebed::Connector directly. To set it up:
+
+    Pebblebed.config do
+      host "mypebbleapp.org" # The host where all your pebbles are mapped
+      service :checkpoint, :version => 1
+      service :grove, :version => 1
+    end
+
+To create a connector do this:
+
+    pebbles = Pebblebed::Connector.new(optional_session_hash)    
+
+If you need to "be" a specific user when you talk to the pebbles you need a session from checkpoint. You provide this
+to your connector when you create it and connector will take care of propagating this information to any pebble you 
+talk to. If you don't plan on doing any authorized request you can omit the session hash.
+
+Then you can start making requests:
+
+    pebbles.checkpoint.get("/identities/1")
+    pebbles.grove.post("/posts/post:mittap.blogs.blog1", :post => {:document => {:body => "This is my blog post"}})
+
 Uid
 ===
 
