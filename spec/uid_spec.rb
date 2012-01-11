@@ -47,6 +47,7 @@ describe Pebblebed::Uid do
     uid = Pebblebed::Uid.new("klass:path$oid")
     -> { uid.klass = "!" }.should raise_error Pebblebed::InvalidUid
     -> { uid.path = "..." }.should raise_error Pebblebed::InvalidUid
+    -> { uid.oid = "/" }.should raise_error Pebblebed::InvalidUid
   end
 
   describe "oid" do
@@ -54,6 +55,10 @@ describe Pebblebed::Uid do
       Pebblebed::Uid.valid_oid?("abc123").should be_true
       Pebblebed::Uid.valid_oid?("abc123!").should be_true
       Pebblebed::Uid.valid_oid?("abc 123").should be_true
+    end
+
+    it "cannot contain a slash" do
+      Pebblebed::Uid.valid_oid?("abc/123").should be_false
     end
 
     it "can contain a full uid" do

@@ -66,7 +66,7 @@ module Pebblebed
     end
 
     def self.valid_oid?(value)
-      !value.nil?
+      !value.nil? && !value.include?('/')
     end
 
     def inspect
