@@ -43,21 +43,36 @@ describe Pebblebed::Uid do
     -> { Pebblebed::Uid.new("!:$298") }.should raise_error Pebblebed::InvalidUid
   end
 
-  it "raises an exception when you modify an uid with an invalid value" do
+  it "raises an exception when you modify a uid with an invalid value" do
     uid = Pebblebed::Uid.new("klass:path$oid")
     -> { uid.klass = "!" }.should raise_error Pebblebed::InvalidUid
     -> { uid.path = "..." }.should raise_error Pebblebed::InvalidUid
-    -> { uid.oid = "(/&%$" }.should raise_error Pebblebed::InvalidUid
   end
 
-  it "rejects invalid labels for klass and oid" do
+  describe "oid" do
+    it "is valid with pretty much anything" do
+      Pebblebed::Uid.valid_oid?("abc123").should be_true
+      Pebblebed::Uid.valid_oid?("abc123!").should be_true
+      Pebblebed::Uid.valid_oid?("abc 123").should be_true
+    end
+
+    it "can contain a full uid" do
+      Pebblebed::Uid.new('klass:path$post:some.path$oid').oid.should eq('post:some.path$oid')
+    end
+
+    it "can be missing" do
+      Pebblebed::Uid.new('klass:path').oid.should be_nil
+    end
+
+    it "is not valid if it is nil" do
+      Pebblebed::Uid.valid_oid?(nil).should be_false
+    end
+  end
+
+  it "rejects invalid labels for klass" do
     Pebblebed::Uid.valid_klass?("abc123").should be_true
     Pebblebed::Uid.valid_klass?("abc123!").should be_false
     Pebblebed::Uid.valid_klass?("").should be_false
-    Pebblebed::Uid.valid_oid?("abc123").should be_true
-    Pebblebed::Uid.valid_oid?("abc123!").should be_false
-    Pebblebed::Uid.valid_oid?("abc 123").should be_false
-    Pebblebed::Uid.valid_oid?("").should be_false
   end
 
   it "rejects invalid paths" do
