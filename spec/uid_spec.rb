@@ -25,7 +25,12 @@ describe Pebblebed::Uid do
     uid.to_s.should eq "klass:$oid"
   end
 
-  it "can be created using a string or a has as constructor parameter" do
+  it "can be created with a string" do
+    uid = Pebblebed::Uid.new "klass:some.path$oid"
+    uid.to_s.should eq "klass:some.path$oid"
+  end
+
+  it "can be created using parameters" do
     uid = Pebblebed::Uid.new :klass => 'klass', :path => 'some.path', :oid => 'oid'
     uid.to_s.should eq "klass:some.path$oid"
   end
