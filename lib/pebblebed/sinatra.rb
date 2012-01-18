@@ -62,15 +62,6 @@ module Sinatra
 
     def self.registered(app)
       app.helpers(Sinatra::Pebblebed::Helpers)
-      begin
-        if app.service
-          app.get "/ping" do
-            "{\"name\":#{(app.service_name || 'undefined').to_s.inspect}}"
-          end
-        end
-      rescue Exception => e
-        # name isn't defined, probably defining ping by hand.
-      end
     end
 
     def declare_pebbles(&block)
