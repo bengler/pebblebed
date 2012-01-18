@@ -49,7 +49,7 @@ module Pebblebed
     end
 
     def self.valid_label?(value)
-      !!(value =~ /^[a-zA-Z0-9_]+$/)
+      !!(value =~ /^[a-zA-Z0-9_-]+$/)
     end
 
     def self.valid_klass?(value)

@@ -80,13 +80,19 @@ describe Pebblebed::Uid do
     Pebblebed::Uid.valid_klass?("").should be_false
   end
 
-  it "rejects invalid paths" do
-    Pebblebed::Uid.valid_path?("abc123").should be_true
-    Pebblebed::Uid.valid_path?("abc.123").should be_true
-    Pebblebed::Uid.valid_path?("").should be_true
-    Pebblebed::Uid.valid_path?("abc!.").should be_false
-    Pebblebed::Uid.valid_path?(".").should be_false
-    Pebblebed::Uid.valid_path?("ab. 123").should be_false
+  describe "path" do
+    it "accepts valid paths" do
+      Pebblebed::Uid.valid_path?("").should be_true
+      Pebblebed::Uid.valid_path?("abc123").should be_true
+      Pebblebed::Uid.valid_path?("abc.123").should be_true
+      Pebblebed::Uid.valid_path?("abc.de-f.123").should be_true
+    end
+
+    it "rejects invalid paths" do
+      Pebblebed::Uid.valid_path?("abc!.").should be_false
+      Pebblebed::Uid.valid_path?(".").should be_false
+      Pebblebed::Uid.valid_path?("ab. 123").should be_false
+    end
   end
 
   it "knows how to parse in place" do
