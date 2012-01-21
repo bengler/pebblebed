@@ -24,7 +24,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "simplecov"
   
   s.add_runtime_dependency "deepstruct"
-  s.add_runtime_dependency "curb"
+  s.add_runtime_dependency "curb", "~> 0.8.0"
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "queryparams"
   s.add_runtime_dependency "futurevalue"
