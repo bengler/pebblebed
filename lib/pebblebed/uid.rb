@@ -69,6 +69,10 @@ module Pebblebed
       !value.nil? && !value.include?('/')
     end
 
+    def realm
+      self.path.split(".").first if self.path
+    end
+
     def inspect
       "#<Pebblebed::Uid '#{to_s}'>"
     end

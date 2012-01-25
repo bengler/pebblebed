@@ -113,4 +113,15 @@ describe Pebblebed::Uid do
     Pebblebed::Uid.valid?("a:b.c.d").should be_true
   end
 
+<<<<<<< HEAD
 end
+=======
+  it "knows how to extract the realm from the path" do
+    Pebblebed::Uid.new("klass:realm.other.stuff$3").realm.should eq 'realm'
+    Pebblebed::Uid.new("klass:realm$3").realm.should eq 'realm'
+    Pebblebed::Uid.new("klass:realm").realm.should eq 'realm'
+    Pebblebed::Uid.new("klass:$3").realm.should eq nil
+  end
+
+end
+>>>>>>> Uid can extract realm
