@@ -15,7 +15,7 @@ module Pebblebed
     end
 
     def put(*args, &block)
-      perform(:post, *args, &block)
+      perform(:put, *args, &block)
     end
 
     def delete(*args, &block)
