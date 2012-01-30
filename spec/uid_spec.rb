@@ -55,6 +55,7 @@ describe Pebblebed::Uid do
       Pebblebed::Uid.valid_oid?("abc123").should be_true
       Pebblebed::Uid.valid_oid?("abc123!").should be_true
       Pebblebed::Uid.valid_oid?("abc 123").should be_true
+      Pebblebed::Uid.valid_oid?("bob@example.com").should be_true
     end
 
     it "cannot contain a slash" do
