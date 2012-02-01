@@ -127,4 +127,15 @@ describe Pebblebed::Uid do
     Pebblebed::Uid.new("klass:realm").realm.should eq 'realm'
     Pebblebed::Uid.new("klass:$3").realm.should eq nil
   end
+
+  describe "equality" do
+    let(:uid) { "klass:realm$3" }
+    it "is dependent on the actual uid" do
+      Pebblebed::Uid.new("klass:realm$3").should eq Pebblebed::Uid.new("klass:realm$3")
+    end
+
+    it "also works for eql?" do
+      Pebblebed::Uid.new("klass:realm$3").eql?(Pebblebed::Uid.new("klass:realm$3")).should be_true
+    end
+  end
 end

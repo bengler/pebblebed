@@ -82,5 +82,13 @@ module Pebblebed
     end
     alias_method :to_uid, :to_s 
 
+    def ==(other)
+      self.to_uid == other.to_uid
+    end
+
+    def eql?(other)
+      self == other
+    end
+
   end
 end
