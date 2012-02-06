@@ -36,7 +36,7 @@ module Pebblebed
     end
 
     def self.valid?(string)
-      begin 
+      begin
         true if new(string)
       rescue InvalidUid
         false
@@ -53,12 +53,17 @@ module Pebblebed
     end
 
     def self.valid_klass?(value)
-      self.valid_label?(value)
+      return false if value =~ /^\.+$/
+      return false if value == ""
+      value.split('.').each do |label|
+        return false unless self.valid_label?(label)
+      end
+      true
     end
 
     def self.valid_path?(value)
       # catches a stupid edge case in ruby where "..".split('.') == [] instead of ["", "", ""]
-      return false if value =~ /^\.+$/ 
+      return false if value =~ /^\.+$/
       value.split('.').each do |label|
         return false unless self.valid_label?(label)
       end
@@ -80,7 +85,7 @@ module Pebblebed
     def to_s
       "#{@klass}:#{@path}$#{@oid}".chomp("$")
     end
-    alias_method :to_uid, :to_s 
+    alias_method :to_uid, :to_s
 
     def ==(other)
       self.to_uid == other.to_uid

@@ -50,6 +50,30 @@ describe Pebblebed::Uid do
     -> { uid.oid = "/" }.should raise_error Pebblebed::InvalidUid
   end
 
+  describe "klass" do
+    let(:uid) { Pebblebed::Uid.new("klass:path$oid") }
+
+    it "allows sub-klasses" do
+      ->{ uid.klass = "sub.sub.class" }.should_not raise_error
+    end
+
+    describe "is valid" do
+      %w(. - _ 8).each do |nice_character|
+        it "with '#{nice_character}'" do
+          ->{ uid.klass = "a#{nice_character}z" }.should_not raise_error
+        end
+      end
+    end
+
+    describe "is invalid" do
+      %w(! / : $ % $).each do |funky_character|
+        specify "with '#{funky_character}'" do
+          ->{ uid.klass = "a#{funky_character}z" }.should raise_error Pebblebed::InvalidUid
+        end
+      end
+    end
+  end
+
   describe "oid" do
     it "is valid with pretty much anything" do
       Pebblebed::Uid.valid_oid?("abc123").should be_true
