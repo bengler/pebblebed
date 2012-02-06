@@ -43,6 +43,10 @@ describe Pebblebed::Uid do
     -> { Pebblebed::Uid.new("!:$298") }.should raise_error Pebblebed::InvalidUid
   end
 
+  it "CGI unescapes the incoming oid" do
+    Pebblebed::Uid.new('klass:path$abc+123').oid.should eq('abc 123')
+  end
+
   it "raises an exception when you modify a uid with an invalid value" do
     uid = Pebblebed::Uid.new("klass:path$oid")
     -> { uid.klass = "!" }.should raise_error Pebblebed::InvalidUid
@@ -50,20 +54,46 @@ describe Pebblebed::Uid do
     -> { uid.oid = "/" }.should raise_error Pebblebed::InvalidUid
   end
 
+  describe "klass" do
+    let(:uid) { Pebblebed::Uid.new("klass:path$oid") }
+
+    it "allows sub-klasses" do
+      ->{ uid.klass = "sub.sub.class" }.should_not raise_error
+    end
+
+    describe "is valid" do
+      %w(. - _ 8).each do |nice_character|
+        it "with '#{nice_character}'" do
+          ->{ uid.klass = "a#{nice_character}z" }.should_not raise_error
+        end
+      end
+    end
+
+    describe "is invalid" do
+      %w(! / : $ % $).each do |funky_character|
+        specify "with '#{funky_character}'" do
+          ->{ uid.klass = "a#{funky_character}z" }.should raise_error Pebblebed::InvalidUid
+        end
+      end
+    end
+  end
+
   describe "oid" do
-    it "is valid with pretty much anything" do
-      Pebblebed::Uid.valid_oid?("abc123").should be_true
-      Pebblebed::Uid.valid_oid?("abc123!").should be_true
-      Pebblebed::Uid.valid_oid?("abc 123").should be_true
-      Pebblebed::Uid.valid_oid?("bob@example.com").should be_true
+    [
+      "abc123",
+      "abc123!@\#$%^&*()[]{}",
+      "abc 123",
+      "alice@example.com",
+      "abc/123",
+      "post:some.path$oid",
+    ].each do |oid|
+      specify "'#{oid}' is a valid oid if GCI escaped" do
+        Pebblebed::Uid.valid_oid?(CGI.escape(oid)).should be_true
+      end
     end
 
-    it "cannot contain a slash" do
-      Pebblebed::Uid.valid_oid?("abc/123").should be_false
-    end
-
-    it "can contain a full uid" do
-      Pebblebed::Uid.new('klass:path$post:some.path$oid').oid.should eq('post:some.path$oid')
+    specify "'abc/123' is an invalid oid" do
+      Pebblebed::Uid.valid_oid?('abc/123').should be_false
     end
 
     it "can be missing" do
