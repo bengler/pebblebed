@@ -27,7 +27,7 @@ module Pebblebed
     def oid=(value)
       return @oid = nil if value == '' || value.nil?
       raise InvalidUid, "Invalid oid '#{value}'" unless self.class.valid_oid?(value)
-      @oid = (value.strip != "") ? CGI.unescape(value) : nil
+      @oid = (value.strip != "") ? value : nil
     end
 
     def self.raw_parse(string)
