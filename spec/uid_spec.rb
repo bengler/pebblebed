@@ -43,10 +43,6 @@ describe Pebblebed::Uid do
     -> { Pebblebed::Uid.new("!:$298") }.should raise_error Pebblebed::InvalidUid
   end
 
-  it "CGI unescapes the incoming oid" do
-    Pebblebed::Uid.new('klass:path$abc+123').oid.should eq('abc 123')
-  end
-
   it "raises an exception when you modify a uid with an invalid value" do
     uid = Pebblebed::Uid.new("klass:path$oid")
     -> { uid.klass = "!" }.should raise_error Pebblebed::InvalidUid
