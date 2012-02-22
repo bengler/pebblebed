@@ -58,6 +58,16 @@ module Sinatra
         missing = keys.map(&:to_s) - (parameters ? parameters.keys : [])
         halt 409, "missing parameters: #{missing.join(', ')}" unless missing.empty?
       end
+
+      def limit_offset_collection(collection, options)
+        limit = (options[:limit] || 20).to_i
+        offset = (options[:offset] || 0).to_i
+        collection = collection.limit(limit+1).offset(offset)
+        last_page = (collection.size <= limit)
+        metadata = {:limit => limit, :offset => offset, :last_page => last_page}
+        collection = collection[0..limit-1]
+        [collection, metadata]
+      end
     end
 
     def self.registered(app)
