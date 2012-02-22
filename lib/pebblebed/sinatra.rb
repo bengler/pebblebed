@@ -3,7 +3,7 @@ require 'pebblebed'
 
 module Sinatra
   module Pebblebed
-    module Helpers      
+    module Helpers
       # Render the markup for a part. A partspec takes the form
       # "<kit>.<partname>", e.g. "base.post"
       def part(partspec, params = {})
@@ -26,7 +26,7 @@ module Sinatra
       def current_session
         params[:session] || request.cookies['checkpoint.session']
       end
-      alias :checkpoint_session :current_session 
+      alias :checkpoint_session :current_session
 
       def pebbles
         @pebbles ||= ::Pebblebed::Connector.new(checkpoint_session, :host => request.host)
