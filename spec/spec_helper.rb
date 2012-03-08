@@ -1,5 +1,6 @@
 require 'simplecov'
 require './spec/mockcached'
+require './spec/mock_pebble'
 require 'bundler'
 require 'rspec'
 

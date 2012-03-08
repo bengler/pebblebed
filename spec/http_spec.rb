@@ -1,6 +1,24 @@
 require 'spec_helper'
 
 describe Pebblebed::Http do 
+
+  let :mock_pebble do
+    MockPebble.new
+  end
+
+  let :pebble_url do
+    "http://localhost:8666/api/mock/v1/echo"
+  end
+
+  before :all do
+    # Starts the mock pebble at localhost:8666/api/mock/v1
+    mock_pebble.start
+  end
+
+  after :all do
+    mock_pebble.shutdown
+  end
+
   it "knows how to pack params into a http query string" do
     Pebblebed::Http.send(:url_with_params, URI("/dingo/"), {a:1}).should eq "/dingo/?a=1"
   end
@@ -23,6 +41,21 @@ describe Pebblebed::Http do
 
   it "raises an exception if there is a http-error" do
     -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status:400, url:"/foobar", body:"Oh noes")) }.should raise_error Pebblebed::HttpError
+  end
+
+  it "encodes posts and puts as json" do
+    ['post', 'put'].each do |method|    
+      response = Pebblebed::Http.send(method.to_sym, pebble_url, {hello:'world'})
+      result = JSON.parse(response.body)
+      result["CONTENT_TYPE"].should eq "application/json"
+      JSON.parse(result["BODY"])['hello'].should eq 'world'
+    end
+  end
+
+  it "encodes gets as url params" do
+    response = Pebblebed::Http.get(pebble_url, {hello: 'world'})
+    result = JSON.parse(response.body)
+    result["QUERY_STRING"].should eq "hello=world"
   end
 
 end
