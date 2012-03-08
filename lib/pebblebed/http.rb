@@ -54,18 +54,20 @@ module Pebblebed
     end
 
     def self.post(url, params, &block)
-      url, params = url_and_params_from_args(url, params, &block)      
-      handle_curl_response(Curl::Easy.http_post(url.to_s, params.to_json) do |curl|
+      url, params = url_and_params_from_args(url, params, &block)
+      body = params.is_a?(String) ? params : params.to_json
+      handle_curl_response(Curl::Easy.http_post(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = 'application/json'
+        curl.headers['Content-Type'] = params.is_a?(String) ? 'text/plain' : 'application/json'
       end)
     end
 
     def self.put(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)      
-      handle_curl_response(Curl::Easy.http_put(url.to_s, params.to_json) do |curl|
+      body = params.is_a?(String) ? params : params.to_json
+      handle_curl_response(Curl::Easy.http_put(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = 'application/json'
+        curl.headers['Content-Type'] = params.is_a?(String) ? 'text/plain' : 'application/json'
       end)
     end
 

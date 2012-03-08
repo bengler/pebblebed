@@ -43,12 +43,21 @@ describe Pebblebed::Http do
     -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status:400, url:"/foobar", body:"Oh noes")) }.should raise_error Pebblebed::HttpError
   end
 
-  it "encodes posts and puts as json" do
+  it "encodes posts and puts as json if the params is a hash" do
     ['post', 'put'].each do |method|    
       response = Pebblebed::Http.send(method.to_sym, pebble_url, {hello:'world'})
       result = JSON.parse(response.body)
       result["CONTENT_TYPE"].should eq "application/json"
       JSON.parse(result["BODY"])['hello'].should eq 'world'
+    end
+  end
+
+  it "encodes posts and puts as text/plain if param is string" do
+    ['post', 'put'].each do |method|    
+      response = Pebblebed::Http.send(method.to_sym, pebble_url, "Hello world")
+      result = JSON.parse(response.body)
+      result["CONTENT_TYPE"].should eq "text/plain"
+      result["BODY"].should eq "Hello world"
     end
   end
 
