@@ -25,7 +25,7 @@ module Pebblebed
 
     def service_params(params)
       params ||= {}
-      params['session'] = @session_key if @session_key
+      params['session'] ||= @session_key if @session_key
       params
     end
 
