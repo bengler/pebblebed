@@ -86,10 +86,8 @@ module Pebblebed
       def valid_path?(value)
         # catches a stupid edge case in ruby where "..".split('.') == [] instead of ["", "", ""]
         return false if value =~ /^\.+$/
-        value.split('.').each do |label|
-          return false unless self.valid_label?(label)
-        end
-        true
+
+        value.split('.').all? { |s| valid_label?(s) }
       end
 
       def valid_oid?(value)
