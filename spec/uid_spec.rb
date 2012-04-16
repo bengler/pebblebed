@@ -1,28 +1,33 @@
 require 'spec_helper'
 
 describe Pebblebed::Uid do
-  it "parses a full uid correctly" do
-    uid = Pebblebed::Uid.new("klass:path$oid")
-    uid.klass.should eq "klass"
-    uid.path.should eq "path"
-    uid.oid.should eq "oid"
-    uid.to_s.should eq "klass:path$oid"
-  end
+  describe "parsing" do
+    context "a full uid" do
+      subject { Pebblebed::Uid.new("klass:path$oid") }
 
-  it "parses an uid with no oid correctly" do
-    uid = Pebblebed::Uid.new("klass:path")
-    uid.klass.should eq "klass"
-    uid.path.should eq "path"
-    uid.oid.should be_nil
-    uid.to_s.should eq "klass:path"
-  end
+      its(:klass) { should eq "klass" }
+      its(:path) { should eq "path" }
+      its(:oid) { should eq "oid" }
+      its(:to_s) { should eq "klass:path$oid" }
+    end
 
-  it "parses an uid with no path correctly" do
-    uid = Pebblebed::Uid.new("klass:$oid")
-    uid.klass.should eq "klass"
-    uid.path.should be_nil
-    uid.oid.should eq "oid"
-    uid.to_s.should eq "klass:$oid"
+    context "without oid" do
+      subject { Pebblebed::Uid.new("klass:path") }
+
+      its(:klass) { should eq "klass" }
+      its(:path) { should eq "path" }
+      its(:oid) { should be_nil }
+      its(:to_s) { should eq "klass:path" }
+    end
+
+    context "without path" do
+      subject { Pebblebed::Uid.new("klass:$oid") }
+
+      its(:klass) { should eq "klass" }
+      its(:path) { should be_nil }
+      its(:oid) { should eq "oid" }
+      its(:to_s) { should eq "klass:$oid" }
+    end
   end
 
   it "can be created with a string" do
@@ -43,11 +48,11 @@ describe Pebblebed::Uid do
     -> { Pebblebed::Uid.new("!:$298") }.should raise_error Pebblebed::InvalidUid
   end
 
-  it "raises an exception when you modify a uid with an invalid value" do
-    uid = Pebblebed::Uid.new("klass:path$oid")
-    -> { uid.klass = "!" }.should raise_error Pebblebed::InvalidUid
-    -> { uid.path = "..." }.should raise_error Pebblebed::InvalidUid
-    -> { uid.oid = "/" }.should raise_error Pebblebed::InvalidUid
+  describe "raises an exception when you modify a uid with an invalid value" do
+    let(:uid) { Pebblebed::Uid.new("klass:path$oid") }
+    specify { -> { uid.klass = "!" }.should raise_error Pebblebed::InvalidUid }
+    specify { -> { uid.path = "..." }.should raise_error Pebblebed::InvalidUid }
+    specify { -> { uid.oid = "/" }.should raise_error Pebblebed::InvalidUid }
   end
 
   describe "klass" do
@@ -107,44 +112,40 @@ describe Pebblebed::Uid do
     Pebblebed::Uid.valid_klass?("").should be_false
   end
 
-  describe "path" do
-    it "accepts valid paths" do
-      Pebblebed::Uid.valid_path?("").should be_true
-      Pebblebed::Uid.valid_path?("abc123").should be_true
-      Pebblebed::Uid.valid_path?("abc.123").should be_true
-      Pebblebed::Uid.valid_path?("abc.de-f.123").should be_true
-    end
+  describe "validating paths" do
+    specify { Pebblebed::Uid.valid_path?("").should be_true }
+    specify { Pebblebed::Uid.valid_path?("abc123").should be_true }
+    specify { Pebblebed::Uid.valid_path?("abc.123").should be_true }
+    specify { Pebblebed::Uid.valid_path?("abc.de-f.123").should be_true }
 
-    it "rejects invalid paths" do
-      Pebblebed::Uid.valid_path?("abc!.").should be_false
-      Pebblebed::Uid.valid_path?(".").should be_false
-      Pebblebed::Uid.valid_path?("ab. 123").should be_false
-    end
+    specify { Pebblebed::Uid.valid_path?("abc!.").should be_false }
+    specify { Pebblebed::Uid.valid_path?(".").should be_false }
+    specify { Pebblebed::Uid.valid_path?("ab. 123").should be_false }
   end
 
-  it "knows how to parse in place" do
-    Pebblebed::Uid.parse("klass:path$oid").should eq ['klass', 'path', 'oid']
-    Pebblebed::Uid.parse("post:this.is.a.path.to$object_id").should eq ['post', 'this.is.a.path.to', 'object_id']
-    Pebblebed::Uid.parse("post:$object_id").should eq ['post', nil, 'object_id']
+  describe "parsing in place" do
+    specify { Pebblebed::Uid.parse("klass:path$oid").should eq ['klass', 'path', 'oid'] }
+    specify { Pebblebed::Uid.parse("post:this.is.a.path.to$object_id").should eq ['post', 'this.is.a.path.to', 'object_id'] }
+    specify { Pebblebed::Uid.parse("post:$object_id").should eq ['post', nil, 'object_id'] }
   end
 
-  it "knows the valid uids from the invalid ones" do
-    Pebblebed::Uid.valid?("F**ing H%$#!!!").should be_false
-    Pebblebed::Uid.valid?("").should be_false
-    Pebblebed::Uid.valid?("bang:").should be_false
-    Pebblebed::Uid.valid?(":bang").should be_false
-    Pebblebed::Uid.valid?(":bang$paff").should be_false
-    Pebblebed::Uid.valid?("$paff").should be_false
-    Pebblebed::Uid.valid?("a:b.c.d$e").should be_true
-    Pebblebed::Uid.valid?("a:$e").should be_true
-    Pebblebed::Uid.valid?("a:b.c.d").should be_true
+  describe "validating uids" do
+    specify { Pebblebed::Uid.valid?("a:b.c.d$e").should be_true }
+    specify { Pebblebed::Uid.valid?("a:$e").should be_true }
+    specify { Pebblebed::Uid.valid?("a:b.c.d").should be_true }
+    specify { Pebblebed::Uid.valid?("F**ing H%$#!!!").should be_false }
+    specify { Pebblebed::Uid.valid?("").should be_false }
+    specify { Pebblebed::Uid.valid?("bang:").should be_false }
+    specify { Pebblebed::Uid.valid?(":bang").should be_false }
+    specify { Pebblebed::Uid.valid?(":bang$paff").should be_false }
+    specify { Pebblebed::Uid.valid?("$paff").should be_false }
   end
 
-  it "knows how to extract the realm from the path" do
-    Pebblebed::Uid.new("klass:realm.other.stuff$3").realm.should eq 'realm'
-    Pebblebed::Uid.new("klass:realm$3").realm.should eq 'realm'
-    Pebblebed::Uid.new("klass:realm").realm.should eq 'realm'
-    Pebblebed::Uid.new("klass:$3").realm.should eq nil
+  describe "extracting realm from path" do
+    specify { Pebblebed::Uid.new("klass:realm.other.stuff$3").realm.should eq 'realm' }
+    specify { Pebblebed::Uid.new("klass:realm$3").realm.should eq 'realm' }
+    specify { Pebblebed::Uid.new("klass:realm").realm.should eq 'realm' }
+    specify { Pebblebed::Uid.new("klass:$3").realm.should eq nil }
   end
 
   describe "equality" do
