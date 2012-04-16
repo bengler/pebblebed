@@ -30,50 +30,6 @@ module Pebblebed
       @oid = (value.strip != "") ? value : nil
     end
 
-    def self.raw_parse(string)
-      /(?<klass>^[^:]+)\:(?<path>[^\$]*)?\$?(?<oid>.*$)?/ =~ string
-      [klass, path, oid]
-    end
-
-    def self.valid?(string)
-      begin
-        true if new(string)
-      rescue InvalidUid
-        false
-      end
-    end
-
-    def self.parse(string)
-      uid = new(string)
-      [uid.klass, uid.path, uid.oid]
-    end
-
-    def self.valid_label?(value)
-      !!(value =~ /^[a-zA-Z0-9_-]+$/)
-    end
-
-    def self.valid_klass?(value)
-      return false if value =~ /^\.+$/
-      return false if value == ""
-      value.split('.').each do |label|
-        return false unless self.valid_label?(label)
-      end
-      true
-    end
-
-    def self.valid_path?(value)
-      # catches a stupid edge case in ruby where "..".split('.') == [] instead of ["", "", ""]
-      return false if value =~ /^\.+$/
-      value.split('.').each do |label|
-        return false unless self.valid_label?(label)
-      end
-      true
-    end
-
-    def self.valid_oid?(value)
-      !value.nil? && !value.include?('/')
-    end
-
     def realm
       self.path.split(".").first if self.path
     end
@@ -95,5 +51,50 @@ module Pebblebed
       self == other
     end
 
+    class << self
+      def raw_parse(string)
+        /(?<klass>^[^:]+)\:(?<path>[^\$]*)?\$?(?<oid>.*$)?/ =~ string
+        [klass, path, oid]
+      end
+
+      def valid?(string)
+        begin
+          true if new(string)
+        rescue InvalidUid
+          false
+        end
+      end
+
+      def parse(string)
+        uid = new(string)
+        [uid.klass, uid.path, uid.oid]
+      end
+
+      def valid_label?(value)
+        !!(value =~ /^[a-zA-Z0-9_-]+$/)
+      end
+
+      def valid_klass?(value)
+        return false if value =~ /^\.+$/
+        return false if value == ""
+        value.split('.').each do |label|
+          return false unless self.valid_label?(label)
+        end
+        true
+      end
+
+      def valid_path?(value)
+        # catches a stupid edge case in ruby where "..".split('.') == [] instead of ["", "", ""]
+        return false if value =~ /^\.+$/
+        value.split('.').each do |label|
+          return false unless self.valid_label?(label)
+        end
+        true
+      end
+
+      def valid_oid?(value)
+        !value.nil? && !value.include?('/')
+      end
+    end
   end
 end
