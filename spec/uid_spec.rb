@@ -121,6 +121,40 @@ describe Pebblebed::Uid do
     specify { Pebblebed::Uid.valid_path?("abc!.").should be_false }
     specify { Pebblebed::Uid.valid_path?(".").should be_false }
     specify { Pebblebed::Uid.valid_path?("ab. 123").should be_false }
+
+    context "with wildcards" do
+      specify { Pebblebed::Uid.valid_path?('*').should be_true }
+      specify { Pebblebed::Uid.valid_path?('a.b.c.*').should be_true }
+      specify { Pebblebed::Uid.valid_path?('a.b|c.d').should be_true }
+      specify { Pebblebed::Uid.valid_path?('a.b|c.*').should be_true }
+      specify { Pebblebed::Uid.valid_path?('^a').should be_true }
+      specify { Pebblebed::Uid.valid_path?('^a.b').should be_true }
+      specify { Pebblebed::Uid.valid_path?('^a.b.c').should be_true }
+      specify { Pebblebed::Uid.valid_path?('a.^b.c').should be_true }
+      specify { Pebblebed::Uid.valid_path?('a.^b.c|d.e').should be_true }
+      specify { Pebblebed::Uid.valid_path?('a.^b.c.*').should be_true }
+
+      specify { Pebblebed::Uid.valid_path?('*a').should be_false }
+      specify { Pebblebed::Uid.valid_path?('a*').should be_false }
+      specify { Pebblebed::Uid.valid_path?('*.b').should be_false }
+      specify { Pebblebed::Uid.valid_path?('a.*.b').should be_false }
+      specify { Pebblebed::Uid.valid_path?('|').should be_false }
+      specify { Pebblebed::Uid.valid_path?('a.|b').should be_false }
+      specify { Pebblebed::Uid.valid_path?('a.b|').should be_false }
+      specify { Pebblebed::Uid.valid_path?('a.|b.c').should be_false }
+      specify { Pebblebed::Uid.valid_path?('a.b|.c').should be_false }
+      specify { Pebblebed::Uid.valid_path?('^').should be_false }
+      specify { Pebblebed::Uid.valid_path?('^.a').should be_false }
+      specify { Pebblebed::Uid.valid_path?('a^').should be_false }
+      specify { Pebblebed::Uid.valid_path?('a^b.c').should be_false }
+    end
+  end
+
+  describe "wildcard paths" do
+    specify { Pebblebed::Uid.wildcard_path?('*').should be_true }
+    specify { Pebblebed::Uid.wildcard_path?('a.b|c.d').should be_true }
+    specify { Pebblebed::Uid.wildcard_path?('a.^b.d').should be_true }
+    specify { Pebblebed::Uid.wildcard_path?('a.b.d').should be_false }
   end
 
   describe "parsing in place" do
