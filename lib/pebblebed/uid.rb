@@ -53,8 +53,10 @@ module Pebblebed
 
     class << self
       def raw_parse(string)
-        /(?<klass>^[^:]+)\:(?<path>[^\$]*)?\$?(?<oid>.*$)?/ =~ string
-        [klass, path, oid]
+        if string =~ /\A([^:]+)\:([^\$]*)?\$?(.+)?\Z/
+          klass, path, oid = $1, $2, $3
+          [klass, path, oid]
+        end
       end
 
       def valid?(string)

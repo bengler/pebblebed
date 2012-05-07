@@ -90,8 +90,10 @@ class Pebblebed::Parts
   end
 
   def self.parse_partspec(partspec)
-    /^(?<service>[^\.]+)\.(?<part>.*)$/ =~ partspec
-    [service, part]
+    if partspec =~ /^([^\.]+)\.(.*)$/
+      service, part = $1, $2
+      [service, part]
+    end
   end
 
   # Create a string of data-attributes from a hash

@@ -20,10 +20,11 @@ module Pebblebed
 
       if Pebblebed.memcached
         cache_keys = ids.collect {|id| cache_key_for_identity_id(id) }
-        result = Hash[Pebblebed.memcached.get_multi(*cache_keys).map do |key, identity|
-                  /identity:(?<id>\d+)/ =~ key # yup, this is ugly, but an easy hack to get the actual identity id we are trying to retrieve
-                  [id.to_i, identity]
-                end]
+        result = Hash[Pebblebed.memcached.get_multi(*cache_keys).map { |key, identity|
+          if key =~ /identity:(\d+)/
+            [$1.to_i, identity]
+          end
+        }]
         uncached = ids-result.keys
       end
 
