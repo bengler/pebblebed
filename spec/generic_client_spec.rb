@@ -15,6 +15,7 @@ describe Pebblebed::GenericClient do
     client = Pebblebed::GenericClient.new("session_key", "http://example.org/")
     client.service_url("/test").to_s.should eq "http://example.org/test"
     client.service_url("").to_s.should eq "http://example.org"
+    client.service_url("/test", :foo => 'bar').to_s.should eq "http://example.org/test?foo=bar"
   end
 
   it "wraps JSON-results in a deep struct" do

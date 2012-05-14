@@ -17,9 +17,18 @@ module Pebblebed
       end
     end
 
-    def service_url(url)
+    def service_url(url, params = nil)
       result = @root_url.dup
       result.path = result.path.sub(/\/+$/, "") + url
+      if params
+        result.query << '&' if result.query
+        result.query ||= ''
+        result.query << if params.is_a?(Hash)
+          params.entries.map { |k, v| CGI.escape(k.to_s) + '=' + CGI.escape(v.to_s) }.join('&')
+        else
+          params
+        end
+      end
       result
     end
 
