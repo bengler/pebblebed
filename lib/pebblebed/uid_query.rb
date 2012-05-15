@@ -1,5 +1,5 @@
 module Pebblebed
-  class MultiUID
+  class UIDSpec
 
     attr_reader :uids, :path, :oid
     def initialize(uids)
