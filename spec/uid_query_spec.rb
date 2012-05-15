@@ -1,9 +1,9 @@
 require 'pebblebed/uid'
 require 'pebblebed/uid_query'
 
-describe Pebblebed::UIDSpec do
+describe Pebblebed::UIDQuery do
   context "with comma separated uids." do
-    subject { Pebblebed::UIDSpec.new("xyz:a.b.c$1,xyz:a.b.c$2") }
+    subject { Pebblebed::UIDQuery.new("xyz:a.b.c$1,xyz:a.b.c$2") }
 
     its(:list?) { should be_true }
     its(:wildcard?) { should be_false }
@@ -13,7 +13,7 @@ describe Pebblebed::UIDSpec do
   end
 
   context "with a wildcard path." do
-    subject { Pebblebed::UIDSpec.new("xyz:a.b.*") }
+    subject { Pebblebed::UIDQuery.new("xyz:a.b.*") }
 
     its(:list?) { should be_false }
     its(:wildcard?) { should be_true }
@@ -22,7 +22,7 @@ describe Pebblebed::UIDSpec do
   end
 
   context "without any oid." do
-    subject { Pebblebed::UIDSpec.new("xyz:a.b.c") }
+    subject { Pebblebed::UIDQuery.new("xyz:a.b.c") }
 
     its(:list?) { should be_false }
     its(:wildcard?) { should be_true }
@@ -31,7 +31,7 @@ describe Pebblebed::UIDSpec do
   end
 
   context "with a wildcard oid." do
-    subject { Pebblebed::UIDSpec.new("xyz:a.b.c$*") }
+    subject { Pebblebed::UIDQuery.new("xyz:a.b.c$*") }
 
     its(:list?) { should be_false }
     its(:wildcard?) { should be_true }
@@ -40,7 +40,7 @@ describe Pebblebed::UIDSpec do
   end
 
   context "with a completely constrained uid" do
-    subject { Pebblebed::UIDSpec.new("xyz:a.b.c$1") }
+    subject { Pebblebed::UIDQuery.new("xyz:a.b.c$1") }
 
     its(:list?) { should be_false }
     its(:wildcard?) { should be_false }

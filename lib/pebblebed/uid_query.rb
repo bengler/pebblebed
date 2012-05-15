@@ -1,5 +1,5 @@
 module Pebblebed
-  class UIDSpec
+  class UIDQuery
 
     attr_reader :uids, :path, :oid
     def initialize(uids)
