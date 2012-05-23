@@ -50,7 +50,7 @@ describe Pebblebed::Http do
     ['post', 'put'].each do |method|    
       response = Pebblebed::Http.send(method.to_sym, pebble_url, {hello:'world'})
       result = JSON.parse(response.body)
-      result["CONTENT_TYPE"].should =~ %r{application/json; charset=utf-8}i
+      result["CONTENT_TYPE"].should =~ %r{^application/json\b}i
       JSON.parse(result["BODY"])['hello'].should eq 'world'
     end
   end
@@ -59,7 +59,7 @@ describe Pebblebed::Http do
     ['post', 'put'].each do |method|    
       response = Pebblebed::Http.send(method.to_sym, pebble_url, "Hello world")
       result = JSON.parse(response.body)
-      result["CONTENT_TYPE"].should =~ %r{text/plain; charset=utf-8}i
+      result["CONTENT_TYPE"].should =~ %r{^text/plain\b}i
       result["BODY"].should eq "Hello world"
     end
   end
