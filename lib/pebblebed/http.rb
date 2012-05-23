@@ -56,18 +56,22 @@ module Pebblebed
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       body = params.is_a?(String) ? params : JSON.dump(params)
+      encoding = body.encoding.name if body.respond_to?(:encoding)
+      encoding ||= 'utf-8'
       handle_curl_response(Curl::Easy.http_post(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = params.is_a?(String) ? 'text/plain' : 'application/json'
+        curl.headers['Content-Type'] = (params.is_a?(String) ? 'text/plain' : 'application/json') + "; charset=#{encoding}"
       end)
     end
 
     def self.put(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)      
       body = params.is_a?(String) ? params : JSON.dump(params)
+      encoding = body.encoding.name if body.respond_to?(:encoding)
+      encoding ||= 'utf-8'
       handle_curl_response(Curl::Easy.http_put(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = params.is_a?(String) ? 'text/plain' : 'application/json'
+        curl.headers['Content-Type'] = (params.is_a?(String) ? 'text/plain' : 'application/json') + "; charset=#{encoding}"
       end)
     end
 
