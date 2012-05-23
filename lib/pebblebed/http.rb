@@ -55,23 +55,19 @@ module Pebblebed
 
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      body = params.is_a?(String) ? params : JSON.dump(params)
-      encoding = body.encoding.name if body.respond_to?(:encoding)
-      encoding ||= 'utf-8'
+      content_type, body = serialize_params(params)
       handle_curl_response(Curl::Easy.http_post(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = (params.is_a?(String) ? 'text/plain' : 'application/json') + "; charset=#{encoding}"
+        curl.headers['Content-Type'] = content_type
       end)
     end
 
     def self.put(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)      
-      body = params.is_a?(String) ? params : JSON.dump(params)
-      encoding = body.encoding.name if body.respond_to?(:encoding)
-      encoding ||= 'utf-8'
+      content_type, body = serialize_params(params)
       handle_curl_response(Curl::Easy.http_put(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = (params.is_a?(String) ? 'text/plain' : 'application/json') + "; charset=#{encoding}"
+        curl.headers['Content-Type'] = content_type
       end)
     end
 
@@ -81,6 +77,18 @@ module Pebblebed
     end
 
     private
+
+    def self.serialize_params(params)
+      if String === params
+        content_type, body = 'text/plain', params
+      else
+        content_type, body = 'application/json', JSON.dump(params)
+      end
+      if body.respond_to?(:encoding) and body.encoding != Encoding::UTF_8
+        content_type << "; charset=#{body.encoding}"
+      end
+      return content_type, body
+    end
 
     def self.handle_http_errors(result)
       if result.status >= 400
