@@ -11,8 +11,8 @@ module Pebblebed
     def perform(method, url = '', params = {}, &block)
       begin
         result = Pebblebed::Http.send(method, service_url(url), service_params(params), &block)
-        return DeepStruct.wrap(Yajl::Parser.parse(result.body))        
-      rescue Yajl::ParseError
+        return DeepStruct.wrap(JSON.parse(result.body))        
+      rescue JSON::ParserError
         return result.body
       end
     end

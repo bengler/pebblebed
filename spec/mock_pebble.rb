@@ -3,7 +3,7 @@
 # http://localhost:8666/api/mock/v1
 
 require 'webrick'
-require 'json'
+require 'yajl/json_gem'
 
 class MockPebble
   class Servlet < WEBrick::HTTPServlet::AbstractServlet

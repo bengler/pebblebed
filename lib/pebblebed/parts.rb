@@ -121,6 +121,6 @@ Pebblebed::Parts.register_composition_strategy :direct do |url, params|
   begin
     Pebblebed::Connector.new.get(url, params)
   rescue HttpError => e
-    "<span class='pebbles_error'>'#{url}' with parameters #{params.to_json} failed (#{e.status}): #{e.message}</span>"
+    "<span class='pebbles_error'>'#{url}' with parameters #{JSON.dump(params)} failed (#{e.status}): #{e.message}</span>"
   end
 end

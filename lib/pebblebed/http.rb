@@ -2,7 +2,7 @@
 
 require 'uri'
 require 'curl'
-require 'yajl'
+require 'yajl/json_gem'
 require 'queryparams'
 require 'nokogiri'
 require 'pathbuilder'
@@ -55,7 +55,7 @@ module Pebblebed
 
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      body = params.is_a?(String) ? params : params.to_json
+      body = params.is_a?(String) ? params : JSON.dump(params)
       handle_curl_response(Curl::Easy.http_post(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
         curl.headers['Content-Type'] = params.is_a?(String) ? 'text/plain' : 'application/json'
@@ -64,7 +64,7 @@ module Pebblebed
 
     def self.put(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)      
-      body = params.is_a?(String) ? params : params.to_json
+      body = params.is_a?(String) ? params : JSON.dump(params)
       handle_curl_response(Curl::Easy.http_put(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
         curl.headers['Content-Type'] = params.is_a?(String) ? 'text/plain' : 'application/json'
