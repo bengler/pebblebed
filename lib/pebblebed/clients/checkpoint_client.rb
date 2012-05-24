@@ -6,35 +6,16 @@ module Pebblebed
       @identity = get("/identities/me")[:identity]
     end
 
-    def cache_key_for_identity_id(id)
-      "identity:#{id}"
-    end
-
     # Given a list of identity IDs it returns each identity or an empty hash for identities that doesnt exists.
     # If pebbles are configured with memcached, results will be cached.
     # Params: ids a list of identities
     def find_identities(ids)
 
       result = {}
-      uncached = ids
-
-      if Pebblebed.memcached
-        cache_keys = ids.collect {|id| cache_key_for_identity_id(id) }
-        result = Hash[Pebblebed.memcached.get_multi(*cache_keys).map { |key, identity|
-          if key =~ /identity:(\d+)/
-            [$1.to_i, identity]
-          end
-        }]
-        uncached = ids-result.keys
-      end
-
-      if uncached.size > 0
-        request = get("/identities/#{uncached.join(',')},")
-        uncached.each_with_index do |id, i|
-          identity = request.identities[i].identity.unwrap
-          result[id] = identity
-          Pebblebed.memcached.set(cache_key_for_identity_id(id), identity, ttl=60*15) if Pebblebed.memcached
-        end
+      request = get("/identities/#{ids.join(',')},")
+      ids.each_with_index do |id, i|
+        identity = request.identities[i].identity.unwrap
+        result[id] = identity
       end
       return DeepStruct.wrap(ids.collect {|id| result[id]})
     end
