@@ -23,7 +23,7 @@ module Pebblebed
   
       
     def parts
-      @parts ||= Pebblebed::Parts.new(self)
+      @@parts ||= Pebblebed::Parts.new(self)
     end
 
     def self.client_class_for(service)
