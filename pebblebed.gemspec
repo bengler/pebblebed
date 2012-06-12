@@ -23,7 +23,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rake"
   s.add_development_dependency "simplecov"
   
-  s.add_runtime_dependency "deepstruct"
+  s.add_runtime_dependency "deepstruct", ">= 0.0.2"
   s.add_runtime_dependency "curb", ">= 0.7.14"
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "queryparams"
