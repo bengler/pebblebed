@@ -33,8 +33,14 @@ module Pebblebed
     end
 
     def service_params(params)
-      params ||= {}
-      params['session'] ||= @session_key if @session_key
+      if (key = @session_key) and (params.nil? or not params[:session])
+        if params
+          params = params.dup  # Make sure we don't modify it
+        else
+          params = {}
+        end
+        params['session'] = key
+      end
       params
     end
 
