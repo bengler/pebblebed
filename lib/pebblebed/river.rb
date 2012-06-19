@@ -24,7 +24,7 @@ module Pebblebed
 
       def publish(options = {})
         connect
-        key = [options[:source], options[:event]].compact.join('.')
+        key = route(options)
         exchange.publish(options.to_json, :persistent => true, :key => key)
       end
 
@@ -55,6 +55,16 @@ module Pebblebed
         true
       end
 
+      def route(options)
+        uid = Pebblebed::Uid.new(options[:uid])
+        key = []
+        key << options[:event]
+        key << uid.path
+        type = uid.klass.split('.')
+        klass = type.shift
+        key << (type.empty? ? klass : type.join('.'))
+        key.compact.join('._.')
+      end
     end
 
   end
