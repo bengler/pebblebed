@@ -58,13 +58,13 @@ describe Pebblebed::River do
       @queue.delete if @queue
     end
 
-    xit "gets selected messages" do
+    it "gets selected messages" do
       @queue = Pebblebed::River.queue_me('carnivore', :key => '#.rspec.#')
 
       @queue.message_count.should eq(0)
       Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
       Pebblebed::River.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
-      Pebblebed::River.publish(:event => 'laugh', :uid => 'testunit:rspec$3', :attributes => {:a => 'b'})
+      Pebblebed::River.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
       @queue.message_count.should eq(2)
     end
 
