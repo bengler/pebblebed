@@ -88,7 +88,7 @@ describe Pebblebed::River do
 
       specify do
         options = {:event => 'created', :uid => 'post.awesome.event:feeds.bagera.whatevs$123'}
-        Pebblebed::River.route(options).should eq('created._.feeds.bagera.whatevs._.awesome.event')
+        Pebblebed::River.route(options).should eq('created._.feeds.bagera.whatevs._.post.awesome.event')
       end
 
       specify do

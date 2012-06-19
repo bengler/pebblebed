@@ -60,9 +60,7 @@ module Pebblebed
         key = []
         key << options[:event]
         key << uid.path
-        type = uid.klass.split('.')
-        klass = type.shift
-        key << (type.empty? ? klass : type.join('.'))
+        key << uid.klass
         key.compact.join('._.')
       end
     end
