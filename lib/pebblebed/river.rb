@@ -64,22 +64,6 @@ module Pebblebed
         key.join('._.')
       end
 
-      def queries(options = {})
-        event = querify(options[:event]).split('|')
-        path = querify(options[:path])
-        klass = querify(options[:klass])
-
-        qx = []
-        qx << [event, klass, path].join('._.')
-        qx
-      end
-
-      def combine_queries()
-      end
-
-      def querify(query)
-        (query || '#').gsub('**', '#')
-      end
     end
 
   end
