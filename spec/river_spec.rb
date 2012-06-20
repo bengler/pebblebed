@@ -9,6 +9,7 @@ require 'pebblebed/river'
 describe Pebblebed::River do
 
   after(:each) do
+    @queue.delete if @queue
     Pebblebed::River.purge
     Pebblebed::River.disconnect
   end
@@ -54,12 +55,9 @@ describe Pebblebed::River do
   end
 
   describe "publishing" do
-    after(:each) do
-      @queue.delete if @queue
-    end
 
     it "gets selected messages" do
-      @queue = Pebblebed::River.queue_me('carnivore', :key => '#.rspec.#')
+      @queue = Pebblebed::River.queue_me('carnivore', :path => 'rspec', :klass => 'thing')
 
       @queue.message_count.should eq(0)
       Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
@@ -100,5 +98,15 @@ describe Pebblebed::River do
       ->{ Pebblebed::River.route(:event => 'whatevs') }.should raise_error ArgumentError
     end
 
+  end
+
+  it "subscribes" do
+    @queue = Pebblebed::River.queue_me('carnivore', :path => 'rspec|testunit', :klass => 'thing')
+
+    @queue.message_count.should eq(0)
+    Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
+    Pebblebed::River.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
+    Pebblebed::River.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
+    @queue.message_count.should eq(3)
   end
 end

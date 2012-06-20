@@ -1,5 +1,6 @@
 require 'json'
 require 'bunny'
+require 'pebblebed/river/subscription'
 
 module Pebblebed
   module River
@@ -36,11 +37,12 @@ module Pebblebed
 
       def queue_me(name = nil, options = {})
         connect
-
         name ||= random_name
-        key = options[:key] || '#'
+
         queue = bunny.queue(name)
-        queue.bind(exchange.name, :key => key)
+        Subscription.new(options).queries.each do |key|
+          queue.bind(exchange.name, :key => key)
+        end
         queue
       end
 
