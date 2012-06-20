@@ -56,12 +56,29 @@ module Pebblebed
       end
 
       def route(options)
+        raise ArgumentError.new(':event is required') unless options[:event]
+        raise ArgumentError.new(':uid is required') unless options[:uid]
+
         uid = Pebblebed::Uid.new(options[:uid])
-        key = []
-        key << options[:event]
-        key << uid.path
-        key << uid.klass
-        key.compact.join('._.')
+        key = [options[:event], uid.klass, uid.path].compact
+        key.join('._.')
+      end
+
+      def queries(options = {})
+        event = querify(options[:event]).split('|')
+        path = querify(options[:path])
+        klass = querify(options[:klass])
+
+        qx = []
+        qx << [event, klass, path].join('._.')
+        qx
+      end
+
+      def combine_queries()
+      end
+
+      def querify(query)
+        (query || '#').gsub('**', '#')
       end
     end
 
