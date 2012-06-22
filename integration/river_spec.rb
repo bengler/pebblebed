@@ -1,5 +1,7 @@
+require 'digest'
 require 'pebblebed/uid'
 require 'pebblebed/river'
+ENV['RACK_ENV'] = 'test'
 
 # Note to readers. This is verbose and ugly
 # because I'm trying to understand what I'm doing.
@@ -48,48 +50,69 @@ describe Pebblebed::River do
   end
 
   describe "the exchange" do
-    subject { Pebblebed::River.exchange }
 
-    its(:name) { should eq('pebblebed.river') }
+    subject { Pebblebed::River.exchange } # defaults to the RACK_ENV variable
+    its(:name) { should eq('pebblebed.river.test') }
     its(:type) { should eq(:topic) }
+
+    context "in production" do
+      subject { Pebblebed::River.exchange('production') }
+
+      its(:name) { should eq('pebblebed.river') }
+    end
+
+    context "in staging" do
+      subject { Pebblebed::River.exchange('staging') }
+
+      its(:name) { should eq('pebblebed.river.staging') }
+    end
   end
 
   describe "publishing" do
 
     it "gets selected messages" do
-      @queue = Pebblebed::River.queue_me('carnivore', :path => 'rspec', :klass => 'thing')
+      @queue = Pebblebed::River.queue_me(:name => 'thingivore', :path => 'rspec', :klass => 'thing')
 
       @queue.message_count.should eq(0)
       Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
       Pebblebed::River.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
       Pebblebed::River.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
+      sleep(0.1)
       @queue.message_count.should eq(2)
     end
 
     it "gets everything if it connects without a key" do
-      @queue = Pebblebed::River.queue_me('carnivore')
+      @queue = Pebblebed::River.queue_me(:name => 'omnivore')
 
       @queue.message_count.should eq(0)
       Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
       Pebblebed::River.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
       Pebblebed::River.publish(:event => 'laugh', :uid => 'testunit:rspec$3', :attributes => {:a => 'b'})
+      sleep(0.1)
       @queue.message_count.should eq(3)
     end
 
     it "sends messages as json" do
-      @queue = Pebblebed::River.queue_me('carnivore')
+      @queue = Pebblebed::River.queue_me(:name => 'eatseverything')
       Pebblebed::River.publish(:event => 'smile', :source => 'rspec', :uid => 'klass:path$1', :attributes => {:a => 'b'})
+      sleep(0.1)
       JSON.parse(@queue.pop[:payload])['uid'].should eq('klass:path$1')
     end
   end
 
   it "subscribes" do
-    @queue = Pebblebed::River.queue_me('carnivore', :path => 'rspec|testunit', :klass => 'thing')
+    @queue = Pebblebed::River.queue_me(:name => 'alltestivore', :path => 'rspec|testunit', :klass => 'thing')
 
     @queue.message_count.should eq(0)
     Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
     Pebblebed::River.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
     Pebblebed::River.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
+    sleep(0.1)
     @queue.message_count.should eq(3)
+  end
+
+  it "is a durable queue" do
+    @queue = Pebblebed::River.queue_me(:name => 'adurablequeue', :path => 'katrina')
+    Pebblebed::River.publish(:event => 'test', :uid => 'person:katrina$1', :attributes => {:a => rand(1000)}, :persistent => false)
   end
 end

@@ -16,30 +16,43 @@ module Pebblebed
       end
 
       def connect
-        bunny.start unless bunny.connected?
+        unless bunny.connected?
+          bunny.start
+          bunny.qos
+        end
       end
 
       def disconnect
-        bunny.stop
+        bunny.stop if bunny.connected?
       end
 
       def publish(options = {})
         connect
+
+        persistent = options.fetch(:persistent) { true }
+
         key = route(options)
-        exchange.publish(options.to_json, :persistent => true, :key => key)
+        exchange.publish(options.to_json, :persistent => persistent, :key => key)
       end
 
-      def exchange
+      def exchange(env = ENV['RACK_ENV'])
         connect
 
-        @exchange ||= bunny.exchange('pebblebed.river', :type => :topic, :durable => :true)
+        name = 'pebblebed.river'
+        unless env == 'production'
+          name << ".#{env}"
+        end
+
+        @exchange = nil if @exchange && @exchange.name != name
+        @exchange ||= bunny.exchange(name, :type => :topic, :durable => :true)
       end
 
-      def queue_me(name = nil, options = {})
+      def queue_me(options = {})
         connect
-        name ||= random_name
 
-        queue = bunny.queue(name)
+        raise ArgumentError.new 'Queue must be named' unless options[:name]
+
+        queue = bunny.queue(options[:name], :durable => true)
         Subscription.new(options).queries.each do |key|
           queue.bind(exchange.name, :key => key)
         end
@@ -51,7 +64,7 @@ module Pebblebed
       end
 
       def purge
-        q = queue_me
+        q = queue_me(:name => 'purge_queue')
         q.purge
         q.delete
         true
