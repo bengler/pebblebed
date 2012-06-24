@@ -1,3 +1,4 @@
+require 'spec_helper'
 require 'pebblebed/river/subscription'
 
 describe Pebblebed::River::Subscription do

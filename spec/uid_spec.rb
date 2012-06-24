@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'pebblebed/uid'
 
 describe Pebblebed::Uid do
   describe "parsing" do

@@ -2,8 +2,10 @@
 
 require 'spec_helper'
 require 'yajl/json_gem'
+require 'pebblebed/http'
+require 'deepstruct'
 
-describe Pebblebed::Http do 
+describe Pebblebed::Http do
 
   let :mock_pebble do
     MockPebble.new
@@ -47,7 +49,7 @@ describe Pebblebed::Http do
   end
 
   it "encodes posts and puts as json if the params is a hash" do
-    ['post', 'put'].each do |method|    
+    ['post', 'put'].each do |method|
       response = Pebblebed::Http.send(method.to_sym, pebble_url, {hello:'world'})
       result = JSON.parse(response.body)
       result["CONTENT_TYPE"].should =~ %r{^application/json\b}i
@@ -56,7 +58,7 @@ describe Pebblebed::Http do
   end
 
   it "encodes posts and puts as text/plain if param is string" do
-    ['post', 'put'].each do |method|    
+    ['post', 'put'].each do |method|
       response = Pebblebed::Http.send(method.to_sym, pebble_url, "Hello world")
       result = JSON.parse(response.body)
       result["CONTENT_TYPE"].should =~ %r{^text/plain\b}i

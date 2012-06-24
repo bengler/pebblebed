@@ -1,14 +1,12 @@
 require 'simplecov'
-require './spec/mockcached'
-require './spec/mock_pebble'
-require 'bundler'
 require 'rspec'
 
 SimpleCov.add_filter 'spec'
 SimpleCov.add_filter 'config'
 SimpleCov.start
 
-Bundler.require
+require './spec/mockcached'
+require './spec/mock_pebble'
 
 RSpec.configure do |c|
   c.mock_with :rspec

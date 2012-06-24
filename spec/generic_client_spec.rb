@@ -1,6 +1,13 @@
 require 'spec_helper'
+require 'pebblebed/clients/abstract_client'
+require 'pebblebed/clients/generic_client'
 
-describe Pebblebed::GenericClient do 
+module Pebblebed
+  module Http
+  end
+end
+
+describe Pebblebed::GenericClient do
   it "always forwards the session key" do
     client = Pebblebed::GenericClient.new("session_key", "http://example.org/")
     client.service_params({})['session'].should eq "session_key"

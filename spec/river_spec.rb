@@ -1,5 +1,6 @@
-require 'pebblebed/uid'
+require 'spec_helper'
 require 'pebblebed/river'
+require 'pebblebed/uid'
 
 describe Pebblebed::River do
 

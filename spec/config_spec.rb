@@ -1,4 +1,6 @@
 require 'spec_helper'
+require 'pebblebed/config'
+require 'pebblebed/connector'
 
 describe Pebblebed do
   it "has a nice dsl that configures stuff" do
