@@ -1,5 +1,5 @@
 module Pebblebed
-  module River
+  class River
     class Subscription
 
       attr_reader :events, :klasses, :paths

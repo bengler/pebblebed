@@ -1,7 +1,6 @@
 require 'digest'
 require 'pebblebed/uid'
 require 'pebblebed/river'
-ENV['RACK_ENV'] = 'test'
 
 # Note to readers. This is verbose and ugly
 # because I'm trying to understand what I'm doing.
@@ -10,96 +9,99 @@ ENV['RACK_ENV'] = 'test'
 # Or explain it to me :)
 describe Pebblebed::River do
 
+  subject { Pebblebed::River.new('whatever') }
+
   after(:each) do
-    @queue.delete if @queue
-    Pebblebed::River.purge
-    Pebblebed::River.disconnect
+    subject.send(:bunny).queues.each do |name, queue|
+      queue.purge
+      queue.delete
+    end
+    subject.disconnect
   end
 
-  it "is disconnected by default" do
-    Pebblebed::River.should_not be_connected
+  it { subject.should_not be_connected }
+
+  it "gets the name right" do
+    subject.exchange_name.should eq('pebblebed.river.whatever')
   end
 
-  it "will connect if you tell it to" do
-    Pebblebed::River.connect
-    Pebblebed::River.should be_connected
+  context "in production" do
+    subject { Pebblebed::River.new('production') }
+
+    it "doesn't append the thing" do
+      subject.exchange_name.should eq('pebblebed.river')
+    end
   end
 
-  it "will connect if you try to publish something" do
-    # guard
-    Pebblebed::River.should_not be_connected
-
-    Pebblebed::River.publish(:event => :test, :uid => 'klass:path$123', :attributes => {:a => 'b'})
-    Pebblebed::River.should be_connected
-  end
-
-  it "connects if you try to talk to the exchange" do
-    # guard
-    Pebblebed::River.should_not be_connected
-
-    Pebblebed::River.exchange
-    Pebblebed::River.should be_connected
+  it "connects" do
+    subject.connect
+    subject.should be_connected
   end
 
   it "disconnects" do
-    Pebblebed::River.connect
-    Pebblebed::River.should be_connected
-
-    Pebblebed::River.disconnect
-    Pebblebed::River.should_not be_connected
+    subject.connect
+    subject.should be_connected
+    subject.disconnect
+    subject.should_not be_connected
   end
 
-  describe "the exchange" do
-    subject { Pebblebed::River.exchange } # defaults to the RACK_ENV variable
-    its(:name) { should eq('pebblebed.river.test') }
-    its(:type) { should eq(:topic) }
+  it "connects if you try to publish something" do
+    subject.should_not be_connected
+    subject.publish(:event => :test, :uid => 'klass:path$123', :attributes => {:a => 'b'})
+    subject.should be_connected
+  end
+
+  it "connects if you try to talk to the exchange" do
+    subject.should_not be_connected
+    subject.send(:exchange)
+    subject.should be_connected
   end
 
   describe "publishing" do
 
     it "gets selected messages" do
-      @queue = Pebblebed::River.queue_me(:name => 'thingivore', :path => 'rspec', :klass => 'thing')
+      queue = subject.queue(:name => 'thingivore', :path => 'rspec', :klass => 'thing')
 
-      @queue.message_count.should eq(0)
-      Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
-      Pebblebed::River.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
-      Pebblebed::River.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
+      queue.message_count.should eq(0)
+      subject.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
+      subject.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
+      subject.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
       sleep(0.1)
-      @queue.message_count.should eq(2)
+      queue.message_count.should eq(2)
     end
 
     it "gets everything if it connects without a key" do
-      @queue = Pebblebed::River.queue_me(:name => 'omnivore')
+      queue = subject.queue(:name => 'omnivore')
 
-      @queue.message_count.should eq(0)
-      Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
-      Pebblebed::River.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
-      Pebblebed::River.publish(:event => 'laugh', :uid => 'testunit:rspec$3', :attributes => {:a => 'b'})
+      queue.message_count.should eq(0)
+      subject.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
+      subject.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
+      subject.publish(:event => 'laugh', :uid => 'testunit:rspec$3', :attributes => {:a => 'b'})
       sleep(0.1)
-      @queue.message_count.should eq(3)
+      queue.message_count.should eq(3)
     end
 
     it "sends messages as json" do
-      @queue = Pebblebed::River.queue_me(:name => 'eatseverything')
-      Pebblebed::River.publish(:event => 'smile', :source => 'rspec', :uid => 'klass:path$1', :attributes => {:a => 'b'})
+      queue = subject.queue(:name => 'eatseverything')
+      subject.publish(:event => 'smile', :source => 'rspec', :uid => 'klass:path$1', :attributes => {:a => 'b'})
       sleep(0.1)
-      JSON.parse(@queue.pop[:payload])['uid'].should eq('klass:path$1')
+      JSON.parse(queue.pop[:payload])['uid'].should eq('klass:path$1')
     end
   end
 
   it "subscribes" do
-    @queue = Pebblebed::River.queue_me(:name => 'alltestivore', :path => 'rspec|testunit', :klass => 'thing')
+    queue = subject.queue(:name => 'alltestivore', :path => 'rspec|testunit', :klass => 'thing')
 
-    @queue.message_count.should eq(0)
-    Pebblebed::River.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
-    Pebblebed::River.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
-    Pebblebed::River.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
+    queue.message_count.should eq(0)
+    subject.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
+    subject.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
+    subject.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
     sleep(0.1)
-    @queue.message_count.should eq(3)
+    queue.message_count.should eq(3)
   end
 
   it "is a durable queue" do
-    @queue = Pebblebed::River.queue_me(:name => 'adurablequeue', :path => 'katrina')
-    Pebblebed::River.publish(:event => 'test', :uid => 'person:katrina$1', :attributes => {:a => rand(1000)}, :persistent => false)
+    queue = subject.queue(:name => 'adurablequeue', :path => 'katrina')
+    subject.publish(:event => 'test', :uid => 'person:katrina$1', :attributes => {:a => rand(1000)}, :persistent => false)
   end
 end
