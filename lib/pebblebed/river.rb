@@ -43,7 +43,9 @@ module Pebblebed
           name << ".#{env}"
         end
 
-        @exchange = nil if @exchange && @exchange.name != name
+        if @exchange && @exchange.name != name
+          raise RuntimeError.new 'The river name changed. Are you sure you are in the right environment?'
+        end
         @exchange ||= bunny.exchange(name, :type => :topic, :durable => :true)
       end
 
@@ -59,11 +61,10 @@ module Pebblebed
         queue
       end
 
-      def random_name
-        Digest::SHA1.hexdigest(rand(10 ** 10).to_s)
-      end
-
       def purge
+        if ENV['RACK_ENV'] == 'production'
+          raise RuntimeError.new('Only God and root can purge in production. And they need to use rabbitmq-cli.')
+        end
         q = queue_me(:name => 'purge_queue')
         q.purge
         q.delete
