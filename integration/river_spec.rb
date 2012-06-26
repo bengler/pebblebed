@@ -50,22 +50,9 @@ describe Pebblebed::River do
   end
 
   describe "the exchange" do
-
     subject { Pebblebed::River.exchange } # defaults to the RACK_ENV variable
     its(:name) { should eq('pebblebed.river.test') }
     its(:type) { should eq(:topic) }
-
-    context "in production" do
-      subject { Pebblebed::River.exchange('production') }
-
-      its(:name) { should eq('pebblebed.river') }
-    end
-
-    context "in staging" do
-      subject { Pebblebed::River.exchange('staging') }
-
-      its(:name) { should eq('pebblebed.river.staging') }
-    end
   end
 
   describe "publishing" do
