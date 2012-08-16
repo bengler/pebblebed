@@ -2,6 +2,7 @@ require 'active_support/inflector'
 
 module Pebblebed 
   class Connector 
+    attr_accessor :key
     def initialize(key = nil, url_opts = {})
       @key = key
       @clients = {}

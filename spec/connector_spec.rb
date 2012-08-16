@@ -25,4 +25,11 @@ describe "Pebblebed::Connector" do
     connector['foobar'].class.name.should eq "Pebblebed::GenericClient"
   end
 
+  it "has key getter and setter" do
+    connector = Pebblebed::Connector.new("session_key")
+    connector.key.should == "session_key"
+    connector.key = "another_key"
+    connector.key.should == "another_key"
+  end
+
 end
