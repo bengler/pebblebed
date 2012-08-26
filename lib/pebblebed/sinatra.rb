@@ -42,13 +42,6 @@ module Sinatra
         end
       end
 
-      def current_identity_is?(identity_id)
-        require_identity
-        unless (current_identity.id == identity_id || current_identity.god)
-          halt 403, "Private resource"
-        end
-      end
-
       def require_god
         require_identity
         halt 403, "Current identity #{current_identity.id} is not god" unless current_identity.god

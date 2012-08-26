@@ -55,7 +55,6 @@ Other helper methods provided by this extension:
     pebbles                                 # Common entrypoint for the Pebblebed::Connector
     current_identity                        # Returns the a DeepStruct record with the vital data for the current user
     require_identity                        # Halts with 403 if there is no current user
-    current_identity_is?(identity_id)       # Halts with 403 if the current user is neither the provided user or a god
     require_god                             # Halts with 403 if the current user is not a god
     require_parameters(parameters, *keys)   # Halts with 409 if the at least one of the provided keys is not in the params-hash
 
