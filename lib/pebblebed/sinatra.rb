@@ -33,7 +33,9 @@ module Sinatra
       end
 
       def current_identity
-        pebbles.checkpoint.me
+        return @current_identity if @identity_checked
+        @identity_checked = true
+        @current_identity = get("/identities/me")[:identity]
       end
 
       def require_identity
