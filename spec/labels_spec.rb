@@ -1,3 +1,4 @@
+require 'pebblebed/uid'
 require 'pebblebed/labels'
 
 describe Pebblebed::Labels do
@@ -5,6 +6,7 @@ describe Pebblebed::Labels do
   describe "default labels" do
     subject { Pebblebed::Labels.new('a.b.c') }
     its(:expanded) {  should eq('label_0' => "a", 'label_1' => "b", 'label_2' => "c") }
+    its(:wildcard?) { should == false }
   end
 
   describe "with a stop label" do
@@ -22,5 +24,10 @@ describe Pebblebed::Labels do
     its(:next) { should eq('thing_3') }
   end
 
+  describe "with wildcard *" do
+    subject { Pebblebed::Labels.new('a.b.c.*') }
+    its(:expanded) { should eq('label_0' => "a", 'label_1' => "b", 'label_2' => "c") }
+    its(:wildcard?) { should == true }
+  end
 
 end

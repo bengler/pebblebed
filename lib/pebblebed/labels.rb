@@ -6,6 +6,8 @@ module Pebblebed
     attr_reader :path, :prefix, :suffix, :stop
     def initialize(path, options = {})
       @path = path
+      @base_path = path.split('.').select {|label| Uid.valid_label?(label)}.join('.')
+      @wildcard = !!Uid.wildcard_path?(path)
       @prefix = options.fetch(:prefix) { 'label' }
       @suffix = options.fetch(:suffix) { nil }
       @stop = options.fetch(:stop) { NO_MARKER }
@@ -15,10 +17,14 @@ module Pebblebed
       label(expanded.length)
     end
 
+    def wildcard?
+      @wildcard
+    end
+
     def expanded
       unless @expanded
         values = {}
-        path.split('.').each_with_index do |label, i|
+        @base_path.split('.').each_with_index do |label, i|
           values[label(i)] = label
         end
         if use_stop_marker?
