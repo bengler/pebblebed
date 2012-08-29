@@ -11,15 +11,22 @@ module Pebblebed
       @stop = options.fetch(:stop) { NO_MARKER }
     end
 
+    def next
+      label(expanded.length)
+    end
+
     def expanded
-      values = {}
-      path.split('.').each_with_index do |label, i|
-        values[label(i)] = label
+      unless @expanded
+        values = {}
+        path.split('.').each_with_index do |label, i|
+          values[label(i)] = label
+        end
+        if use_stop_marker?
+          values[label(values.length)] = stop
+        end
+        @expanded = values
       end
-      if use_stop_marker?
-        values[label(values.length)] = stop
-      end
-      values
+      @expanded
     end
 
     def label(i)

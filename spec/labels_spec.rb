@@ -17,5 +17,10 @@ describe Pebblebed::Labels do
     its(:expanded) { should eq('dot_0_' => 'p', 'dot_1_' => 'r', 'dot_2_' => 'q', 'dot_3_' => '<END>') }
   end
 
+  describe "next label" do
+    subject { Pebblebed::Labels.new('a.b.c', :prefix => 'thing') }
+    its(:next) { should eq('thing_3') }
+  end
+
 
 end
