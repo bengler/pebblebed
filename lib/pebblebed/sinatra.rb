@@ -82,5 +82,27 @@ module Sinatra
       set :service_name, service_name
     end
 
+    ##
+    # Adds a before filter to ensure all visitors gets assigned a provisional identity. The options hash takes an
+    # optional key "unless" which can be used to specify a lambda/proc that yields true if
+    # the request should *not* trigger a redirect to checkpoint
+    #
+    # TODO: Also implement a guard against infinite redirect loops
+    #
+    # Usage example:
+    #
+    #   assign_provisional_identity :unless => lambda {
+    #    request.path_info == '/ping' || BotDetector.bot?(request.user_agent)
+    #  }
+    #
+    def assign_provisional_identity(opts={})
+      before do
+        skip = opts.has_key?(:unless) && instance_exec(&opts[:unless])
+        if !skip && current_identity.nil?
+          redirect pebbles.checkpoint.service_url("/login/anonymous", :redirect_to => request.path).to_s
+        end
+      end
+    end
+
   end
 end
