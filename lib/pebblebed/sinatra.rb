@@ -33,19 +33,14 @@ module Sinatra
       end
 
       def current_identity
-        pebbles.checkpoint.me
+        return @current_identity if @identity_checked
+        @identity_checked = true
+        @current_identity = get("/identities/me")[:identity]
       end
 
       def require_identity
         unless current_identity.respond_to?(:id)
           halt 403, "No current identity."
-        end
-      end
-
-      def current_identity_is?(identity_id)
-        require_identity
-        unless (current_identity.id == identity_id || current_identity.god)
-          halt 403, "Private resource"
         end
       end
 
