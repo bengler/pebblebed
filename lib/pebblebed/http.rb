@@ -13,7 +13,7 @@ module Pebblebed
     attr_reader :status, :message
     def initialize(message, status = nil)
       @message = message
-      @status = status      
+      @status = status
     end
 
     def not_found?
@@ -49,7 +49,7 @@ module Pebblebed
     end
 
     def self.get(url = nil, params = nil, &block)
-      url, params = url_and_params_from_args(url, params, &block)      
+      url, params = url_and_params_from_args(url, params, &block)
       handle_curl_response(Curl::Easy.perform(url_with_params(url, params)))
     end
 
@@ -63,7 +63,7 @@ module Pebblebed
     end
 
     def self.put(url, params, &block)
-      url, params = url_and_params_from_args(url, params, &block)      
+      url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
       handle_curl_response(Curl::Easy.http_put(url.to_s, body) do |curl|
         curl.headers['Accept'] = 'application/json'
@@ -72,7 +72,7 @@ module Pebblebed
     end
 
     def self.delete(url, params, &block)
-      url, params = url_and_params_from_args(url, params, &block)      
+      url, params = url_and_params_from_args(url, params, &block)
       handle_curl_response(Curl::Easy.http_delete(url_with_params(url, params)))
     end
 
@@ -94,17 +94,18 @@ module Pebblebed
       if result.status >= 400
         errmsg = "Service request to '#{result.url}' failed (#{result.status}):"
         errmsg << extract_error_summary(result.body)
-        raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status) 
+        puts errmsg
+        raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status)
         # ActiveSupport::SafeBuffer.new is the same as errmsg.html_safe in rails
       end
       result
     end
 
-    def self.handle_curl_response(curl_response)      
+    def self.handle_curl_response(curl_response)
       handle_http_errors(CurlResult.new(curl_response))
     end
 
-    def self.url_with_params(url, params)      
+    def self.url_with_params(url, params)
       url.query = QueryParams.encode(params || {})
       url.to_s
     end
