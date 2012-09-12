@@ -152,3 +152,10 @@ For some pebbles Pebblebed may furnish a richer client with helper methods. This
 augmented client in the `/lib/pebblebed/clients` folder and naming the class `Pebblebed::<YourPebbleName>Client`. For
 an example of this see `CheckpointClient` which in addition to the common http-methods provides the method `me` which
 returns the logged in user and `god?` which checks whether she's a god(dess).
+
+Troubleshooting
+===============
+
+When something fails, say you're trying to post to grove using a pebblebed connector, it might be a good idea to try the same thing from command line first:
+
+	curl -XPOST 'http://example.com/api/grove/v1/posts/post.todo:dna.org.a.b' --data '{"session":"session_name","post":{"document": {"body": "Hello Grove!"},"tags": ["welcome", "tutorial"]}}' -H "Content-Type: application/json"
