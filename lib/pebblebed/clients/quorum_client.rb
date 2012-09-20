@@ -5,7 +5,7 @@ require 'futurevalue'
 module Pebblebed
   class QuorumClient < AbstractClient
     def initialize(services, session_key)
-      LOGGER.warn "DEPRECATED: The Pebblebed::QuorumClient is no longer supported."
+      #::LOGGER.warn "DEPRECATED: The Pebblebed::QuorumClient is no longer supported."
       @clients = Hash[services.map do |service|
         [service, Pebblebed::GenericClient.new(session_key, Pebblebed.root_url_for(service))]
       end]
