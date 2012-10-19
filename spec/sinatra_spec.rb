@@ -8,6 +8,10 @@ require 'rack/test'
 class TestApp < Sinatra::Base
   register Sinatra::Pebblebed
 
+  assign_provisional_identity :unless => lambda {
+    params[:provisional] != 'yes'
+  }
+
   get '/public' do
     "You are a guest here"
   end
@@ -31,11 +35,11 @@ describe Sinatra::Pebblebed do
     TestApp
   end
 
-  let(:guest) { DeepStruct.wrap(:identity => {}) }
+  let(:guest) { DeepStruct.wrap({}) }
   let(:alice) { DeepStruct.wrap(:identity => {:id => 1, :god => false}) }
   let(:odin) { DeepStruct.wrap(:identity => {:id => 2, :god => true}) }
 
-  let(:checkpoint) { stub(:get => identity) }
+  let(:checkpoint) { stub(:get => identity, :service_url => 'http://example.com') }
 
   before :each do
     Pebblebed::Connector.any_instance.stub(:checkpoint).and_return checkpoint
@@ -47,6 +51,11 @@ describe Sinatra::Pebblebed do
     specify "can see public endpoint" do
       get '/public'
       last_response.body.should == 'You are a guest here'
+    end
+
+    it "can assign a provisional identity" do
+      get '/public', :provisional => 'yes'
+      last_response.status.should == 302
     end
 
     specify "cannot see private endpoints" do
@@ -97,5 +106,4 @@ describe Sinatra::Pebblebed do
       last_response.body.should == 'You are most powerful'
     end
   end
-
 end
