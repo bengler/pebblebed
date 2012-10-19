@@ -31,14 +31,18 @@ describe Sinatra::Pebblebed do
     TestApp
   end
 
-  let(:guest) { {:identity => {}} }
-  let(:alice) { {:identity => {:id => 1, :god => false}} }
-  let(:odin) { {:identity => {:id => 2, :god => true}} }
+  let(:guest) { DeepStruct.wrap(:identity => {}) }
+  let(:alice) { DeepStruct.wrap(:identity => {:id => 1, :god => false}) }
+  let(:odin) { DeepStruct.wrap(:identity => {:id => 2, :god => true}) }
+
+  let(:checkpoint) { stub(:get => identity) }
+
+  before :each do
+    Pebblebed::Connector.any_instance.stub(:checkpoint).and_return checkpoint
+  end
 
   context "a guest" do
-    before :each do
-      Pebblebed::Connector.any_instance.stub(:checkpoint).and_return(stub(:get => DeepStruct.wrap(guest)))
-    end
+    let(:identity) { guest }
 
     specify "can see public endpoint" do
       get '/public'
@@ -57,9 +61,7 @@ describe Sinatra::Pebblebed do
   end
 
   context "as a user" do
-    before :each do
-      Pebblebed::Connector.any_instance.stub(:checkpoint).and_return(stub(:get => DeepStruct.wrap(alice)))
-    end
+    let(:identity) { alice }
 
     specify "can see public endpoint" do
       get '/public'
@@ -78,9 +80,7 @@ describe Sinatra::Pebblebed do
   end
 
   context "as a god" do
-    before :each do
-      Pebblebed::Connector.any_instance.stub(:checkpoint).and_return(stub(:get => DeepStruct.wrap(odin)))
-    end
+    let(:identity) { odin }
 
     specify "can see public endpoint" do
       get '/public'
