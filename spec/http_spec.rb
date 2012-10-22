@@ -22,6 +22,8 @@ describe Pebblebed::Http do
 
   after :all do
     mock_pebble.shutdown
+    # give webrick some time to cool down
+    sleep 0.1
   end
 
   it "knows how to pack params into a http query string" do

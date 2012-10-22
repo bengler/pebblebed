@@ -46,7 +46,7 @@ class MockPebble
   end
 
   def start
-    @server = WEBrick::HTTPServer.new(:Port => 8666, :AccessLog => [])
+    @server = WEBrick::HTTPServer.new(:Port => 8666, Logger: WEBrick::Log.new("/dev/null"), :AccessLog => [])
     @server.mount "/api/mock/v1", Servlet
     @server_thread = Thread.new do
       @server.start

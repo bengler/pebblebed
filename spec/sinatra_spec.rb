@@ -2,7 +2,7 @@
 
 require 'pebblebed'
 require 'pebblebed/sinatra'
-require 'sinatra'
+require 'sinatra/base'
 require 'rack/test'
 
 class TestApp < Sinatra::Base
