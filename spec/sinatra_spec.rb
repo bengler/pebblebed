@@ -8,6 +8,8 @@ require 'rack/test'
 class TestApp < Sinatra::Base
   register Sinatra::Pebblebed
 
+  set :show_exceptions, :after_handler
+
   assign_provisional_identity :unless => lambda {
     params[:provisional] != 'yes'
   }
@@ -24,6 +26,10 @@ class TestApp < Sinatra::Base
   get '/root' do
     require_god
     "You are most powerful"
+  end
+
+  get '/nonexistant' do
+    raise Pebblebed::HttpNotFoundError, "Not found"
   end
 
 end
@@ -104,6 +110,15 @@ describe Sinatra::Pebblebed do
     it "cannot see root endpoints" do
       get '/root'
       last_response.body.should == 'You are most powerful'
+    end
+  end
+
+  describe "error handling" do
+    let(:identity) { guest }
+    it "Adds graceful handling of Pebblebed::HttpNotFoundError exceptions" do
+      get '/nonexistant'
+      last_response.status.should == 404
+      last_response.body.should == 'Not found'
     end
   end
 end

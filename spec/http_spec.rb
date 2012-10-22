@@ -46,7 +46,11 @@ describe Pebblebed::Http do
     url.to_s.should eq "http://example.org/api/foo/bar"
   end
 
-  it "raises an exception if there is a http-error" do
+  it "raises an Pebblebed::RecordNotFoundError if there is a 404 error" do
+    -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status:404, url:"/foobar", body:"Not found")) }.should raise_error Pebblebed::HttpNotFoundError
+  end
+
+  it "raises an Pebblebed::HttpError if there is any other http-error" do
     -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status:400, url:"/foobar", body:"Oh noes")) }.should raise_error Pebblebed::HttpError
   end
 
