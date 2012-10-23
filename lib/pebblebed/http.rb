@@ -11,6 +11,7 @@ require 'active_support'
 module Pebblebed
   class HttpError < Exception
     attr_reader :status, :message
+
     def initialize(message, status = nil)
       @message = message
       @status = status
@@ -21,12 +22,16 @@ module Pebblebed
     end
 
     def to_s
-      "#<Pebblebed::HttpError #{@status} #{message}>"
+      "#<#{self.class.name} #{@status} #{message}>"
     end
 
     def inspect
       to_s
     end
+  end
+
+  class HttpNotFoundError < HttpError
+
   end
 
   module Http
@@ -91,11 +96,15 @@ module Pebblebed
     end
 
     def self.handle_http_errors(result)
-      if result.status >= 400
+      if result.status == 404
+        errmsg = "Resource not found: '#{result.url}'"
+        errmsg << extract_error_summary(result.body)
+        # ActiveSupport::SafeBuffer.new is the same as errmsg.html_safe in rails
+        raise HttpNotFoundError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status)
+      elsif result.status >= 400
         errmsg = "Service request to '#{result.url}' failed (#{result.status}):"
         errmsg << extract_error_summary(result.body)
         raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status)
-        # ActiveSupport::SafeBuffer.new is the same as errmsg.html_safe in rails
       end
       result
     end
