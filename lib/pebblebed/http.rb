@@ -97,7 +97,7 @@ module Pebblebed
 
     def self.handle_http_errors(result)
       if result.status == 404
-        errmsg = "Record not found: '#{result.url}'"
+        errmsg = "Resource not found: '#{result.url}'"
         errmsg << extract_error_summary(result.body)
         # ActiveSupport::SafeBuffer.new is the same as errmsg.html_safe in rails
         raise HttpNotFoundError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status)
