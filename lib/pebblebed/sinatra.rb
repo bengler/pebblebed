@@ -69,7 +69,7 @@ module Sinatra
       app.helpers(Sinatra::Pebblebed::Helpers)
 
       app.error ::Pebblebed::HttpNotFoundError do
-        [404, 'Not found']
+        [404,  env['sinatra.error'].message]
       end
 
     end

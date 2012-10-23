@@ -29,7 +29,7 @@ class TestApp < Sinatra::Base
   end
 
   get '/nonexistant' do
-    raise Pebblebed::HttpNotFoundError, "Not found"
+    raise Pebblebed::HttpNotFoundError, "Not found /nonexistant"
   end
 
 end
@@ -115,10 +115,14 @@ describe Sinatra::Pebblebed do
 
   describe "error handling" do
     let(:identity) { guest }
-    it "Adds graceful handling of Pebblebed::HttpNotFoundError exceptions" do
+    it "Adds graceful handling of HttpNotFoundError exceptions" do
       get '/nonexistant'
       last_response.status.should == 404
-      last_response.body.should == 'Not found'
+    end
+    it "Gives the error message of HttpNotFoundError as response body" do
+      get '/nonexistant'
+      last_response.status.should == 404
+      last_response.body.should == 'Not found /nonexistant'
     end
   end
 end
