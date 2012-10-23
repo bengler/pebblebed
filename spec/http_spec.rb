@@ -46,12 +46,16 @@ describe Pebblebed::Http do
     url.to_s.should eq "http://example.org/api/foo/bar"
   end
 
-  it "raises an Pebblebed::RecordNotFoundError if there is a 404 error" do
-    -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status:404, url:"/foobar", body:"Not found")) }.should raise_error Pebblebed::HttpNotFoundError
+  it "raises an HttpNotFoundError if there is a 404 error" do
+    -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status: 404, url: "/foobar", body: "Not found")) }.should raise_error Pebblebed::HttpNotFoundError
   end
 
-  it "raises an Pebblebed::HttpError if there is any other http-error" do
-    -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status:400, url:"/foobar", body:"Oh noes")) }.should raise_error Pebblebed::HttpError
+  it "includes the url of the failed resource in the error message" do
+    -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status: 404, url: "/nosuchresource", body: "Not found")) }.should raise_error Pebblebed::HttpNotFoundError, /\/nosuchresource/
+  end
+
+  it "raises an HttpError if there is any other http-error" do
+    -> { Pebblebed::Http.send(:handle_http_errors, DeepStruct.wrap(status: 400, url: "/foobar", body: "Oh noes")) }.should raise_error Pebblebed::HttpError
   end
 
   it "encodes posts and puts as json if the params is a hash" do
