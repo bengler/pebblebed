@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 require 'pebblebed'
 require 'pebblebed/sinatra'
 require 'sinatra/base'
@@ -49,6 +48,11 @@ describe Sinatra::Pebblebed do
 
   before :each do
     Pebblebed::Connector.any_instance.stub(:checkpoint).and_return checkpoint
+  end
+
+  before :each do
+    # Make sure the app get an uniqie session key for every received request
+    TestApp.any_instance.stub(:current_session) { rand(36**128).to_s(36) }
   end
 
   context "a guest" do
