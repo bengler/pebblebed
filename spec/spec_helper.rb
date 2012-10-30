@@ -10,9 +10,11 @@ require './spec/mock_pebble'
 
 RSpec.configure do |c|
   c.mock_with :rspec
+  c.before(:each) do
+    ::Pebblebed.memcached = MemcacheMock.new
+  end
   c.around(:each) do |example|
     clear_cookies if respond_to?(:clear_cookies)
-    $memcached = MemcacheMock.new
     example.run
   end
 end
