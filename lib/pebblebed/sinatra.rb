@@ -36,7 +36,7 @@ module Sinatra
         return nil unless current_session
         return @identity if @identity_checked
         @identity_checked = true
-        @identity = ::Pebblebed.memcached.fetch("identity-for-session-#{current_session}", 60) do
+        @identity = ::Pebblebed.memcached.fetch("identity-for-session-#{current_session}", ttl = 60) do
           pebbles.checkpoint.get("/identities/me")[:identity]
         end
       end
