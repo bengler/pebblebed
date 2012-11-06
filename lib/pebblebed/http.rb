@@ -9,7 +9,7 @@ require 'pathbuilder'
 require 'active_support'
 
 module Pebblebed
-  class HttpError < Exception
+  class HttpError < StandardError
     attr_reader :status, :message
 
     def initialize(message, status = nil)
