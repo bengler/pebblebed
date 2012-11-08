@@ -1,5 +1,4 @@
 # encoding: utf-8
-
 require 'pebblebed'
 require 'pebblebed/sinatra'
 require 'sinatra/base'
@@ -49,6 +48,13 @@ describe Sinatra::Pebblebed do
 
   before :each do
     Pebblebed::Connector.any_instance.stub(:checkpoint).and_return checkpoint
+  end
+
+  let(:random_session) { rand(36**128).to_s(36) }
+
+  before :each do
+    # Make sure the app get an uniqie session key for every received request
+    TestApp.any_instance.stub(:current_session) { random_session }
   end
 
   context "a guest" do
@@ -123,6 +129,24 @@ describe Sinatra::Pebblebed do
       get '/nonexistant'
       last_response.status.should == 404
       last_response.body.should == 'Not found /nonexistant'
+    end
+  end
+
+  describe "current identity caching" do
+    let(:identity) { alice }
+
+    it "will not cache current_identity by default" do
+      checkpoint.should_receive(:get).twice
+      get '/private'
+      get '/private'
+    end
+
+    it "can be configured to cache current identity" do
+      session = random_session
+      app.set :cache_current_identity, true
+      checkpoint.should_receive(:get).once
+      get '/private'
+      get '/private'
     end
   end
 end
