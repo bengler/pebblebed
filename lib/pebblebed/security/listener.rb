@@ -60,7 +60,7 @@ module Pebblebed
           :interval => 1
         }
         queue = river.queue queue_options
-        queue.subscribe(ack: true) do |message|
+        queue.subscribe(:ack => true) do |message|
           consider message
         end
       end
