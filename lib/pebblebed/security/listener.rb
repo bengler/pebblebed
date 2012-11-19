@@ -6,7 +6,9 @@ module Pebblebed
 
       def initialize(options)
         @app_name = options[:app_name]
-        @handlers = {:group => {}, :group_membership => {}, :group_subtree => {}}
+        @handlers = {:access_group => {},
+          :access_group_membership => {},
+          :access_group_subtree => {}}
       end
 
       def start
@@ -21,30 +23,30 @@ module Pebblebed
       end
 
       def on_group_declared(&block)
-        @handlers[:group][:create] = block
-        @handlers[:group][:update] = block
+        @handlers[:access_group][:create] = block
+        @handlers[:access_group][:update] = block
       end
 
       def on_group_removed(&block)
-        @handlers[:group][:delete] = block
+        @handlers[:access_group][:delete] = block
       end
 
       def on_subtree_declared(&block)
-        @handlers[:group_subtree][:create] = block
-        @handlers[:group_subtree][:update] = block
+        @handlers[:access_group_subtree][:create] = block
+        @handlers[:access_group_subtree][:update] = block
       end
 
       def on_subtree_removed(&block)
-        @handlers[:group_subtree][:delete] = block
+        @handlers[:access_group_subtree][:delete] = block
       end
 
       def on_membership_declared(&block)
-        @handlers[:group_membership][:create] = block
-        @handlers[:group_membership][:update] = block
+        @handlers[:access_group_membership][:create] = block
+        @handlers[:access_group_membership][:update] = block
       end
 
       def on_membership_removed(&block)
-        @handlers[:group_membership][:delete] = block
+        @handlers[:access_group_membership][:delete] = block
       end
 
       private
@@ -55,7 +57,7 @@ module Pebblebed
         queue_options =  {
           :name => "#{@app_name}.security_listener",
           :path => '**',
-          :klass => 'group|group_membership|group_subtree',
+          :klass => 'access_group|access_group_membership|access_group_subtree',
           :event => '**',
           :interval => 1
         }
@@ -79,12 +81,12 @@ module Pebblebed
         event_handler = @handlers[klass.to_sym][event.to_sym]
         return unless event_handler
         case klass
-        when 'group'
+        when 'access_group'
           event_handler.call(:id => attributes['id'], :label => attributes['label'])
-        when 'group_membership'
+        when 'access_group_membership'
           event_handler.call(:group_id => attributes['group_id'],
             :identity_id => attributes['identity_id'])
-        when 'group_subtree'
+        when 'access_group_subtree'
           event_handler.call(:group_id => attributes['group_id'],
             :location => attributes['location'])
         end

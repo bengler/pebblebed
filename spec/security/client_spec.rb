@@ -11,12 +11,12 @@ describe Pebblebed::Security::Client do
   let :sample_memberships_record do
     {
       'memberships' => [
-        {'membership' => {'id' => 10, 'group_id' => 1, 'identity_id' => 1}},
-        {'membership' => {'id' => 20, 'group_id' => 2, 'identity_id' => 1}},
+        {'membership' => {'id' => 10, 'access_group_id' => 1, 'identity_id' => 1}},
+        {'membership' => {'id' => 20, 'access_group_id' => 2, 'identity_id' => 1}},
       ],
-      'groups' => [
-        {'group' => {'id' => 1, 'label' => "group_1", 'subtrees' => ["a.b.c"]}},
-        {'group' => {'id' => 2, 'label' => "group_2", 'subtrees' => ["a.c.d.c"]}}
+      'access_groups' => [
+        {'access_group' => {'id' => 1, 'label' => "group_1", 'subtrees' => ["a.b.c"]}},
+        {'access_group' => {'id' => 2, 'label' => "group_2", 'subtrees' => ["a.c.d.c"]}}
       ]
     }
   end

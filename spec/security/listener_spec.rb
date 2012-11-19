@@ -14,7 +14,7 @@ describe Pebblebed::Security::Listener do
     end
     message = {:payload => {
       'event' => 'create',
-      'uid' => 'group:abc.groups$10',
+      'uid' => 'access_group:abc.access_groups$10',
       'attributes' => {
         'id' => 10,
         'label' => 'the_label'

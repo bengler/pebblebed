@@ -74,8 +74,8 @@ module Pebblebed
         memberships_record['memberships'].each do |membership|
           @group_ids << membership['membership']['group_id']
         end
-        memberships_record['groups'].each do |group|
-          group['group']['subtrees'].each do |subtree|
+        memberships_record['access_groups'].each do |group|
+          group['access_group']['subtrees'].each do |subtree|
             @subtrees << subtree.split('.')
           end
         end

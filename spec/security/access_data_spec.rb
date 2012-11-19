@@ -5,7 +5,7 @@ require 'pebblebed/security/access_data'
 describe Pebblebed::Security::AccessData do
   let :access_data do
     Pebblebed::Security::AccessData.new(
-      :groups => [1,2,3],
+      :access_groups => [1,2,3],
       :subtrees => ['a.b', 'a.b.c.d.e', 'a.c.d', 'a.c.e.f']
     )
   end
@@ -28,9 +28,9 @@ describe Pebblebed::Security::AccessData do
         {'membership' => {'id' => 10, 'group_id' => 1, 'identity_id' => 1}},
         {'membership' => {'id' => 20, 'group_id' => 2, 'identity_id' => 1}},
       ],
-      'groups' => [
-        {'group' => {'id' => 1, 'label' => "group_1", 'subtrees' => ["a.b.c"]}},
-        {'group' => {'id' => 2, 'label' => "group_2", 'subtrees' => ["a.c.d.c"]}}
+      'access_groups' => [
+        {'access_group' => {'id' => 1, 'label' => "group_1", 'subtrees' => ["a.b.c"]}},
+        {'access_group' => {'id' => 2, 'label' => "group_2", 'subtrees' => ["a.c.d.c"]}}
       ]
     }
     ad = Pebblebed::Security::AccessData.new(record)
