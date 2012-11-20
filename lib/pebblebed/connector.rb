@@ -1,7 +1,7 @@
 require 'active_support/inflector'
 
-module Pebblebed 
-  class Connector 
+module Pebblebed
+  class Connector
     attr_accessor :key
     def initialize(key = nil, url_opts = {})
       @key = key
@@ -14,15 +14,15 @@ module Pebblebed
       (@clients[service.to_sym] ||= client_class.new(@key, Pebblebed.root_url_for(service.to_s, @url_opts)))
     end
 
-    # Returns a quorum client that talks to the provided list of 
+    # Returns a quorum client that talks to the provided list of
     # pebbles all at once. The result is a hash of services and their
     # responses. If any service returned an error, their entry
     # in the hash will be an HttpError object.
     def quorum(services = nil, session_key = nil)
       QuorumClient.new(services || Pebblebed.services, session_key)
     end
-  
-      
+
+
     def parts
       @@parts ||= Pebblebed::Parts.new(self)
     end

@@ -78,16 +78,20 @@ module Pebblebed
 
       # Determines the correct event handler for the message and calls it
       def handle(event, klass, attributes)
+        # TODO: Remove the following line after grove has been deployed. This skips old messages
+        # with no processing.
+        return unless ['access_group', 'access_group_membership', 'access_group_subtree'].include?(klass)
+
         event_handler = @handlers[klass.to_sym][event.to_sym]
         return unless event_handler
         case klass
         when 'access_group'
           event_handler.call(:id => attributes['id'], :label => attributes['label'])
         when 'access_group_membership'
-          event_handler.call(:group_id => attributes['group_id'],
+          event_handler.call(:access_group_id => attributes['access_group_id'],
             :identity_id => attributes['identity_id'])
         when 'access_group_subtree'
-          event_handler.call(:group_id => attributes['group_id'],
+          event_handler.call(:access_group_id => attributes['access_group_id'],
             :location => attributes['location'])
         end
       end
