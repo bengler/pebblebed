@@ -21,7 +21,7 @@ module Pebblebed
 
       private
 
-      def fetch_membership_data_for(identity_id)
+      def fetch_membership_data_for(identity)
         result = Pebblebed.memcached.fetch("identity_membership_data:#{identity}", IDENTITY_MEMBERSHIPS_TTL) do
           @connector.checkpoint.get("/identities/#{identity}/memberships").to_json
         end
