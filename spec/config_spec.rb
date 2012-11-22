@@ -15,6 +15,11 @@ describe Pebblebed do
     Pebblebed::Connector.instance_methods.should include :checkpoint
   end
 
+  it "raises an error when memcached is used but not configured" do
+    Pebblebed.memcached = nil
+    -> {Pebblebed.memcached}.should raise_error RuntimeError
+  end
+
   it "can calculate the root uri of any pebble" do
     Pebblebed.config do
       service :checkpoint
