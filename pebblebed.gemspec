@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rack-test" # for testing purposes
   s.add_development_dependency "memcache_mock"
 
-  s.add_runtime_dependency "deepstruct", ">= 0.0.2"
+  s.add_runtime_dependency "deepstruct", ">= 0.0.3"
   s.add_runtime_dependency "curb", ">= 0.7.14"
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "queryparams"
