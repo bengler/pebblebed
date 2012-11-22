@@ -35,6 +35,7 @@ module Pebblebed
   end
 
   def self.memcached
+    raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached
     @memcached
   end
 

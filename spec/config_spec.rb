@@ -6,12 +6,12 @@ describe Pebblebed do
   it "has a nice dsl that configures stuff" do
     Pebblebed.config do
       host "example.org"
-      memcached $memcached
+      memcached "MemcachedClient"
       service :checkpoint
     end
 
     Pebblebed.host.should eq "example.org"
-    Pebblebed.memcached.should eq $memcached
+    Pebblebed.memcached.should eq "MemcachedClient"
     Pebblebed::Connector.instance_methods.should include :checkpoint
   end
 
