@@ -4,6 +4,10 @@ require 'pebblebed'
 module Sinatra
   module Pebblebed
     module Helpers
+      # Cache identity for this amount of seconds. TTL will be reset each cache hit,
+      # so real TTL might be much longer than this.
+      IDENTITY_CACHE_TTL = 10
+
       # Render the markup for a part. A partspec takes the form
       # "<kit>.<partname>", e.g. "base.post"
       def part(partspec, params = {})
@@ -39,10 +43,13 @@ module Sinatra
         if cache_current_identity?
           cache_key = "identity-for-session-#{current_session}"
           @identity = ::Pebblebed.memcached.get(cache_key)
-          return @identity if @identity
+          if @identity
+            ::Pebblebed.memcached.touch(cache_key, IDENTITY_CACHE_TTL)
+            return @identity
+          end
           @identity = pebbles.checkpoint.get("/identities/me")[:identity]
           # Cache identity only if there is a current user
-          ::Pebblebed.memcached.set(cache_key, @identity, 60) if @identity.id?
+          ::Pebblebed.memcached.set(cache_key, @identity, IDENTITY_CACHE_TTL) if @identity.id?
         else
           @identity = pebbles.checkpoint.get("/identities/me")[:identity]
         end
