@@ -37,12 +37,16 @@ module Sinatra
         return @identity if @identity_checked
         @identity_checked = true
         if cache_current_identity?
-          @identity = ::Pebblebed.memcached.fetch("identity-for-session-#{current_session}", :ttl => 60) do
-            pebbles.checkpoint.get("/identities/me")[:identity]
-          end
+          cache_key = "identity-for-session-#{current_session}"
+          @identity = ::Pebblebed.memcached.get(cache_key)
+          return @identity if @identity
+          @identity = pebbles.checkpoint.get("/identities/me")[:identity]
+          # Cache identity only if there is a current user
+          ::Pebblebed.memcached.set(cache_key, @identity, 60) if @identity.id?
         else
           @identity = pebbles.checkpoint.get("/identities/me")[:identity]
         end
+        @identity
       end
 
       def cache_current_identity?

@@ -3,6 +3,7 @@ require 'pebblebed'
 require 'pebblebed/sinatra'
 require 'sinatra/base'
 require 'rack/test'
+require 'spec_helper'
 
 class TestApp < Sinatra::Base
   register Sinatra::Pebblebed
@@ -47,6 +48,7 @@ describe Sinatra::Pebblebed do
   let(:checkpoint) { stub(:get => identity, :service_url => 'http://example.com') }
 
   before :each do
+    TestApp.any_instance.stub(:current_session).and_return "validsessionyesyesyes"
     Pebblebed::Connector.any_instance.stub(:checkpoint).and_return checkpoint
   end
 
@@ -145,6 +147,18 @@ describe Sinatra::Pebblebed do
       session = random_session
       app.set :cache_current_identity, true
       checkpoint.should_receive(:get).once
+      get '/private'
+      get '/private'
+    end
+  end
+
+  describe "identity caching disabled when no current user" do
+    let(:identity) { {} }
+
+    it "will not cache identity when there is no current identity" do
+      identity = nil
+      app.set :cache_current_identity, true
+      checkpoint.should_receive(:get).twice
       get '/private'
       get '/private'
     end
