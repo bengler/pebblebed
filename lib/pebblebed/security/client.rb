@@ -4,7 +4,7 @@ module Pebblebed
     class Client
       # TTL is reset for every cache hit, so actual TTL might be much longer
       # as long as the user keeps hitting that cache.
-      IDENTITY_MEMBERSHIPS_TTL = 10
+      IDENTITY_MEMBERSHIPS_TTL = 7
 
       def initialize(connector)
         @connector = connector
@@ -28,7 +28,8 @@ module Pebblebed
         result = Pebblebed.memcached.fetch(cache_key, IDENTITY_MEMBERSHIPS_TTL) do
           @connector.checkpoint.get("/identities/#{identity}/memberships").to_json
         end
-        Pebblebed.memcached.touch(cache_key, IDENTITY_MEMBERSHIPS_TTL)
+        # Reinstate this line when memcached version >= 1.4.8
+        # Pebblebed.memcached.touch(cache_key, IDENTITY_MEMBERSHIPS_TTL)
         JSON.parse(result)
       end
 

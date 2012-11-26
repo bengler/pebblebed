@@ -6,7 +6,7 @@ module Sinatra
     module Helpers
       # Cache identity for this amount of seconds. TTL will be reset each cache hit,
       # so real TTL might be much longer than this.
-      IDENTITY_CACHE_TTL = 10
+      IDENTITY_CACHE_TTL = 7
 
       # Render the markup for a part. A partspec takes the form
       # "<kit>.<partname>", e.g. "base.post"
@@ -44,7 +44,8 @@ module Sinatra
           cache_key = "identity-for-session-#{current_session}"
           @identity = ::Pebblebed.memcached.get(cache_key)
           if @identity
-            ::Pebblebed.memcached.touch(cache_key, IDENTITY_CACHE_TTL)
+            # Reinstate this line when memcached version >= 1.4.8
+            # ::Pebblebed.memcached.touch(cache_key, IDENTITY_CACHE_TTL)
             return @identity
           end
           @identity = pebbles.checkpoint.get("/identities/me")[:identity]
