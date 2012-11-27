@@ -13,10 +13,6 @@ module Pebblebed
     end
   end
 
-  def self.config(&block)
-    Builder.new.send(:instance_eval, &block)
-  end
-
   def self.require_service(name, options = {})
     (@services ||= {})[name.to_sym] = options
     Pebblebed::Connector.class_eval <<-END
@@ -26,33 +22,39 @@ module Pebblebed
     END
   end
 
-  def self.host
-    @host
-  end
+  class << self
+    def config(&block)
+      Builder.new.send(:instance_eval, &block)
+    end
 
-  def self.host=(value)
-    @host = value
-  end
+    def host
+      @host
+    end
 
-  def self.memcached
-    raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached
-    @memcached
-  end
+    def host=(value)
+      @host = value
+    end
 
-  def self.memcached=(value)
-    @memcached = value
-  end
+    def memcached
+      raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached
+      @memcached
+    end
 
-  def self.services
-    @services.keys
-  end
+    def memcached=(value)
+      @memcached = value
+    end
 
-  def self.version_of(service)
-    return 1 unless @services && @services[service.to_sym]
-    @services[service.to_sym][:version] || 1
-  end
+    def services
+      @services.keys
+    end
 
-  def self.root_url_for(service, url_opts={})
-    URI("http://#{url_opts[:host] || self.host}/api/#{service}/v#{version_of(service)}/")
+    def version_of(service)
+      return 1 unless @services && @services[service.to_sym]
+      @services[service.to_sym][:version] || 1
+    end
+
+    def root_url_for(service, url_opts={})
+      URI("http://#{url_opts[:host] || host}/api/#{service}/v#{version_of(service)}/")
+    end
   end
 end
