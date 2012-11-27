@@ -50,7 +50,7 @@ module Sinatra
           end
           @identity = pebbles.checkpoint.get("/identities/me")[:identity]
           # Cache identity only if there is a current user
-          ::Pebblebed.memcached.set(cache_key, @identity, IDENTITY_CACHE_TTL) if @identity.id?
+          ::Pebblebed.memcached.set(cache_key, @identity, IDENTITY_CACHE_TTL) if @identity && @identity.id?
         else
           @identity = pebbles.checkpoint.get("/identities/me")[:identity]
         end
