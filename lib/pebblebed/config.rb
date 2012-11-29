@@ -11,10 +11,11 @@ module Pebblebed
     def service(name, options = {})
       Pebblebed.require_service(name, options)
     end
-  end
 
-  def self.config(&block)
-    Builder.new.send(:instance_eval, &block)
+    def base_uri(value)
+      Pebblebed.base_uri = value
+    end
+    alias base_url base_uri
   end
 
   def self.require_service(name, options = {})
@@ -26,33 +27,58 @@ module Pebblebed
     END
   end
 
-  def self.host
-    @host
-  end
+  class << self
+    def config(&block)
+      Builder.new.send(:instance_eval, &block)
+    end
 
-  def self.host=(value)
-    @host = value
-  end
+    def host
+      @host
+    end
 
-  def self.memcached
-    raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached
-    @memcached
-  end
+    def host=(value)
+      @host = value
+    end
 
-  def self.memcached=(value)
-    @memcached = value
-  end
+    def memcached
+      raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached
+      @memcached
+    end
 
-  def self.services
-    @services.keys
-  end
+    def memcached=(value)
+      @memcached = value
+    end
 
-  def self.version_of(service)
-    return 1 unless @services && @services[service.to_sym]
-    @services[service.to_sym][:version] || 1
-  end
+    def services
+      @services.keys
+    end
 
-  def self.root_url_for(service, url_opts={})
-    URI("http://#{url_opts[:host] || self.host}/api/#{service}/v#{version_of(service)}/")
+    def base_uri
+      @base_uri
+    end
+    alias base_url base_uri
+
+    def base_uri=(value)
+      @base_uri = value
+    end
+    alias base_url= base_uri=
+
+    def version_of(service)
+      return 1 unless @services && @services[service.to_sym]
+      @services[service.to_sym][:version] || 1
+    end
+
+    def root_url_for(service, url_opts={})
+      URI.join(base_url_for(url_opts), "/api/#{service}/v#{version_of(service)}/")
+    end
+
+    def base_url_for(url_opts)
+      raise RuntimeError, "Please specify only one of host & base_uri" if url_opts[:host] && (url_opts[:base_uri] || url_opts[:base_url])
+      [:base_uri, :base_url].each do |key|
+        return url_opts[key] if url_opts[key]
+      end
+      return "http://#{url_opts[:host]}" if url_opts[:host]
+      base_uri || "http://#{host}"
+    end
   end
 end
