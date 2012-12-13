@@ -10,11 +10,12 @@ require 'active_support'
 
 module Pebblebed
   class HttpError < StandardError
-    attr_reader :status, :message
+    attr_reader :status, :message, :response
 
-    def initialize(message, status = nil)
+    def initialize(message, status = nil, response = nil)
       @message = message
       @status = status
+      @response = response
     end
 
     def not_found?
@@ -104,7 +105,7 @@ module Pebblebed
       elsif result.status >= 400
         errmsg = "Service request to '#{result.url}' failed (#{result.status}):"
         errmsg << extract_error_summary(result.body)
-        raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status)
+        raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status, result)
       end
       result
     end
