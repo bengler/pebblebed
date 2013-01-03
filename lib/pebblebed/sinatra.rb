@@ -37,7 +37,7 @@ module Sinatra
       end
 
       def current_identity_data
-        return nil unless current_session
+        return DeepStruct.wrap({}) unless current_session
         return @current_identity_data if @current_identity_data_fetched
         @current_identity_data_fetched = true
         if cache_current_identity?
@@ -49,8 +49,8 @@ module Sinatra
             return @current_identity_data
           end
           @current_identity_data = pebbles.checkpoint.get("/identities/me")
-          # Cache identity only if there is a current user
-            ::Pebblebed.memcached.set(cache_key, @current_identity_data, IDENTITY_CACHE_TTL) if @current_identity_data['identity']
+          # Cache identity only if there is an identity in the data returned from checkpoint
+          ::Pebblebed.memcached.set(cache_key, @current_identity_data, IDENTITY_CACHE_TTL) if @current_identity_data['identity']
         else
           @current_identity_data = pebbles.checkpoint.get("/identities/me")
         end
