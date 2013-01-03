@@ -61,6 +61,10 @@ module Sinatra
         current_identity_data['identity']
       end
 
+      def current_profile
+        current_identity_data['profile']
+      end
+
       def cache_current_identity?
         settings.respond_to?(:cache_current_identity) && settings.cache_current_identity
       end
