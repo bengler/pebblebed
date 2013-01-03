@@ -70,7 +70,7 @@ module Sinatra
       end
 
       def require_identity
-        unless current_identity.respond_to?(:id)
+        unless current_identity
           halt 403, "No current identity."
         end
       end
