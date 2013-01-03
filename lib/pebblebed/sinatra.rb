@@ -36,25 +36,29 @@ module Sinatra
         @pebbles ||= ::Pebblebed::Connector.new(checkpoint_session, :host => request.host)
       end
 
-      def current_identity
+      def current_identity_data
         return nil unless current_session
-        return @identity if @identity_checked
-        @identity_checked = true
+        return @current_identity_data if @current_identity_data_fetched
+        @current_identity_data_fetched = true
         if cache_current_identity?
-          cache_key = "identity-for-session-#{current_session}"
-          @identity = ::Pebblebed.memcached.get(cache_key)
-          if @identity
+          cache_key = "identity-data-for-session-#{current_session}"
+          @current_identity_data = ::Pebblebed.memcached.get(cache_key)
+          if @current_identity_data
             # Reinstate this line when memcached version >= 1.4.8
             # ::Pebblebed.memcached.touch(cache_key, IDENTITY_CACHE_TTL)
-            return @identity
+            return @current_identity_data
           end
-          @identity = pebbles.checkpoint.get("/identities/me")[:identity]
+          @current_identity_data = pebbles.checkpoint.get("/identities/me")
           # Cache identity only if there is a current user
-          ::Pebblebed.memcached.set(cache_key, @identity, IDENTITY_CACHE_TTL) if @identity && @identity.id?
+            ::Pebblebed.memcached.set(cache_key, @current_identity_data, IDENTITY_CACHE_TTL) if @current_identity_data['identity']
         else
-          @identity = pebbles.checkpoint.get("/identities/me")[:identity]
+          @current_identity_data = pebbles.checkpoint.get("/identities/me")
         end
-        @identity
+        @current_identity_data
+      end
+
+      def current_identity
+        current_identity_data['identity']
       end
 
       def cache_current_identity?
