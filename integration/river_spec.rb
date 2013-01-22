@@ -14,6 +14,8 @@ describe Pebblebed::River do
   after(:each) do
     subject.send(:bunny).queues.each do |name, queue|
       queue.purge
+      # If you don't delete the queue, the subscription will not
+      # change, even if you give it a new one.
       queue.delete
     end
     subject.disconnect
@@ -90,14 +92,16 @@ describe Pebblebed::River do
   end
 
   it "subscribes" do
-    queue = subject.queue(:name => 'alltestivore', :path => 'rspec|testunit', :klass => 'thing')
+    queue = subject.queue(:name => 'alltestivore', :path => 'area51.rspec|area51.testunit', :klass => 'thing', :event => 'smile')
 
     queue.message_count.should eq(0)
-    subject.publish(:event => 'smile', :uid => 'thing:rspec$1', :attributes => {:a => 'b'})
-    subject.publish(:event => 'frown', :uid => 'thing:rspec$2', :attributes => {:a => 'b'})
-    subject.publish(:event => 'laugh', :uid => 'thing:testunit$3', :attributes => {:a => 'b'})
+    subject.publish(:event => 'smile', :uid => 'thing:area51.rspec$1', :attributes => {:a => 'b'})
+    subject.publish(:event => 'smile', :uid => 'thing:area51.testunit$2', :attributes => {:a => 'b'})
+    subject.publish(:event => 'smile', :uid => 'thing:area51.whatever$3', :attributes => {:a => 'b'}) # doesn't match path
+    subject.publish(:event => 'frown', :uid => 'thing:area51.rspec$4', :attributes => {:a => 'b'}) # doesn't match event
+
     sleep(0.1)
-    queue.message_count.should eq(3)
+    queue.message_count.should eq(2)
   end
 
   it "is a durable queue" do
