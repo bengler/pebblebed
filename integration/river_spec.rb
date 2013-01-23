@@ -92,16 +92,19 @@ describe Pebblebed::River do
   end
 
   it "subscribes" do
-    queue = subject.queue(:name => 'alltestivore', :path => 'area51.rspec|area51.testunit', :klass => 'thing', :event => 'smile')
+    queue = subject.queue(:name => 'alltestivore', :path => 'area51.rspec|area51.testunit|area52.*|area53.**', :klass => 'thing', :event => 'smile')
 
     queue.message_count.should eq(0)
     subject.publish(:event => 'smile', :uid => 'thing:area51.rspec$1', :attributes => {:a => 'b'})
     subject.publish(:event => 'smile', :uid => 'thing:area51.testunit$2', :attributes => {:a => 'b'})
     subject.publish(:event => 'smile', :uid => 'thing:area51.whatever$3', :attributes => {:a => 'b'}) # doesn't match path
     subject.publish(:event => 'frown', :uid => 'thing:area51.rspec$4', :attributes => {:a => 'b'}) # doesn't match event
+    subject.publish(:event => 'smile', :uid => 'thing:area52.one.two.three$5', :attributes => {:a => 'b'}) # doesn't match wildcard path
+    subject.publish(:event => 'smile', :uid => 'thing:area52.one$6', :attributes => {:a => 'b'}) # matches wildcard path
+    subject.publish(:event => 'smile', :uid => 'thing:area53.one.two.three$7', :attributes => {:a => 'b'}) # matches wildcard path
 
     sleep(0.1)
-    queue.message_count.should eq(2)
+    queue.message_count.should eq(4)
   end
 
   it "is a durable queue" do
