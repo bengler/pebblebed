@@ -61,7 +61,7 @@ Other helper methods provided by this extension:
 ### Testing Sinatra APIs
 
 To use the handy (but very, very dirty) helpers for the Pebbles Checkpoint authorization,
-you must require `pebblebed/rspec_helpec` (this is not included by default in the pebblebed gem)
+you must require `pebblebed/rspec_helper` (this is not included by default in the pebblebed gem)
 and include `Pebblebed::RSpecHelper` in your test context:
 
 
