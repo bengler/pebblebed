@@ -4,6 +4,7 @@ require 'pebblebed/sinatra'
 require 'sinatra/base'
 require 'rack/test'
 require 'spec_helper'
+require 'pebblebed/rspec_helper'
 
 class TestApp < Sinatra::Base
   register Sinatra::Pebblebed
@@ -36,31 +37,16 @@ end
 
 describe Sinatra::Pebblebed do
   include Rack::Test::Methods
+  include Pebblebed::RSpecHelper
 
   def app
     TestApp
   end
 
-  let(:guest) { DeepStruct.wrap({}) }
-  let(:alice) { DeepStruct.wrap(:identity => {:id => 1, :god => false}) }
-  let(:odin) { DeepStruct.wrap(:identity => {:id => 2, :god => true}) }
-
-  let(:checkpoint) { stub(:get => identity, :service_url => 'http://example.com') }
-
-  before :each do
-    TestApp.any_instance.stub(:current_session).and_return "validsessionyesyesyes"
-    Pebblebed::Connector.any_instance.stub(:checkpoint).and_return checkpoint
-  end
-
   let(:random_session) { rand(36**128).to_s(36) }
 
-  before :each do
-    # Make sure the app get an uniqie session key for every received request
-    TestApp.any_instance.stub(:current_session) { random_session }
-  end
-
   context "a guest" do
-    let(:identity) { guest }
+    before(:each) { guest! }
 
     specify "can see public endpoint" do
       get '/public'
@@ -84,7 +70,7 @@ describe Sinatra::Pebblebed do
   end
 
   context "as a user" do
-    let(:identity) { alice }
+    before(:each) { user! }
 
     specify "can see public endpoint" do
       get '/public'
@@ -103,7 +89,7 @@ describe Sinatra::Pebblebed do
   end
 
   context "as a god" do
-    let(:identity) { odin }
+    before(:each) { god!(:session => random_session) }
 
     specify "can see public endpoint" do
       get '/public'
@@ -122,11 +108,13 @@ describe Sinatra::Pebblebed do
   end
 
   describe "error handling" do
-    let(:identity) { guest }
+    before(:each) { guest! }
+
     it "Adds graceful handling of HttpNotFoundError exceptions" do
       get '/nonexistant'
       last_response.status.should == 404
     end
+
     it "Gives the error message of HttpNotFoundError as response body" do
       get '/nonexistant'
       last_response.status.should == 404
@@ -134,33 +122,36 @@ describe Sinatra::Pebblebed do
     end
   end
 
-  describe "current identity caching" do
-    let(:identity) { alice }
+  describe "identity caching" do
 
-    it "will not cache current_identity by default" do
-      checkpoint.should_receive(:get).twice
-      get '/private'
-      get '/private'
+    context "with logged in user" do
+      before(:each) { user!(:session => random_session) }
+      let(:checkpoint) { Pebblebed::Connector.new.checkpoint }
+
+      it "is not turned on by default" do
+        checkpoint.should_receive(:get).twice
+        get '/private'
+        get '/private'
+      end
+
+      it "can be turned on" do
+        app.set :cache_current_identity, true
+        checkpoint.should_receive(:get).once
+        get '/private'
+        get '/private'
+      end
+
+      context "with guest user" do
+        before(:each) { guest! }
+
+        it "is disabled" do
+          app.set :cache_current_identity, true
+          checkpoint.should_receive(:get).twice
+          get '/private'
+          get '/private'
+        end
+      end
     end
 
-    it "can be configured to cache current identity" do
-      session = random_session
-      app.set :cache_current_identity, true
-      checkpoint.should_receive(:get).once
-      get '/private'
-      get '/private'
-    end
-  end
-
-  describe "identity caching disabled when no current user" do
-    let(:identity) { {} }
-
-    it "will not cache identity when there is no current identity" do
-      identity = nil
-      app.set :cache_current_identity, true
-      checkpoint.should_receive(:get).twice
-      get '/private'
-      get '/private'
-    end
   end
 end

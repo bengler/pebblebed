@@ -58,6 +58,51 @@ Other helper methods provided by this extension:
     require_god                             # Halts with 403 if the current user is not a god
     require_parameters(parameters, *keys)   # Halts with 409 if the at least one of the provided keys is not in the params-hash
 
+### Testing Sinatra APIs
+
+To use the handy (but very, very dirty) helpers for the Pebbles Checkpoint authorization,
+you must require `pebblebed/rspec_helper` (this is not included by default in the pebblebed gem)
+and include `Pebblebed::RSpecHelper` in your test context:
+
+
+```ruby
+require 'pebblebed/rspec_helper'
+
+describe Something do
+  include Pebblebed::RSpecHelper
+end
+```
+
+You can set the current identity to be either god, a regular logged in user, or a guest user.
+
+If you call either `god!` or `user!`, the sinatra app's
+current session defaults to the string 'validsession'.
+The current realm defaults to the string 'testrealm'.
+
+You can override default values for :id or :session or :realm,
+or add additional identity values on god or user by passing them in:
+
+```ruby
+user!(:id => 7, :session => 'abc', :realm => 'area51', :profile => {:a => 'b'})
+```
+
+There are two convenience methods that are added to the context:
+```ruby
+current_identity # => the god or user, or nil if you've called guest!
+another_identity # => a non-god user with an id of (current_user.id + 1)
+```
+
+```ruby
+  context "when god" do
+    before(:each) { god! }
+    it "has stuff in the test context" do
+      current_identity.god # => true
+      current_identity.id # => 1
+
+      other_identity.id # => 2
+    end
+  end
+```
 
 Not Sinatra
 ===========
