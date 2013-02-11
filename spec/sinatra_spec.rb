@@ -24,6 +24,11 @@ class TestApp < Sinatra::Base
     "You are logged in"
   end
 
+  get '/group' do
+    require_access_to_path("testrealm.specialgroup.123")
+    "You are granted access to this content"
+  end
+
   get '/root' do
     require_god
     "You are most powerful"
@@ -104,6 +109,48 @@ describe Sinatra::Pebblebed do
     it "cannot see root endpoints" do
       get '/root'
       last_response.body.should == 'You are most powerful'
+    end
+  end
+
+  describe "with access groups control" do
+    let(:checkpoint) {
+      checkpoint = stub
+      checkpoint.stub!(:service_url => 'http://example.com')
+      checkpoint
+    }
+    context "as a guest" do
+      specify "not allowed" do
+        guest!
+        get '/group'
+        last_response.status.should == 403
+      end
+    end
+    context "as a god" do
+      specify "allowed without policy check" do
+        god!(:session => random_session)
+        get '/group'
+        last_response.body.should == "You are granted access to this content"
+      end
+    end
+    context "as user without grants" do
+      specify "is disallowed" do
+        user!
+        checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+        checkpoint.should_receive(:get).with("/identities/1/access_to/testrealm.specialgroup.123").and_return(DeepStruct.wrap(:access => {:granted => false}))
+        Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
+        get '/group'
+        last_response.status.should == 403
+      end
+    end
+    context "as user with grants" do
+      specify "is allowed" do
+        user!
+        checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+        checkpoint.should_receive(:get).with("/identities/1/access_to/testrealm.specialgroup.123").and_return(DeepStruct.wrap(:access => {:granted => true}))
+        Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
+        get '/group'
+        last_response.body.should == "You are granted access to this content"
+      end
     end
   end
 
