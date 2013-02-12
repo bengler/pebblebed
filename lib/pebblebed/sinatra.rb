@@ -85,6 +85,14 @@ module Sinatra
         halt 409, "missing parameters: #{missing.join(', ')}" unless missing.empty?
       end
 
+      def require_access_to_path(path)
+        require_identity
+        return if current_identity.god and path.split(".")[0] == current_identity.realm
+        res = pebbles.checkpoint.get("/identities/#{current_identity.id}/access_to/#{path}")
+        return if res['access'] and res['access']['granted'] == true
+        halt 403, "Access denied."
+      end
+
       def limit_offset_collection(collection, options)
         limit = (options[:limit] || 20).to_i
         offset = (options[:offset] || 0).to_i
