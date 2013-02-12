@@ -49,14 +49,14 @@ This exception has the fields `status` and `message`.
 Other helper methods provided by this extension:
 
     part(partspec, params = {})             # Include a part from a kit (See https://github.com/benglerpebbles/kits)
-    parts_script_include_tags               # All script tags required by the kits 
+    parts_script_include_tags               # All script tags required by the kits
     parts_stylesheet_include_tags           # All stylesheet-tags required by the kits
     current_session                         # The hash string that identifies the current browser session
     pebbles                                 # Common entrypoint for the Pebblebed::Connector
     current_identity                        # Returns the a DeepStruct record with the vital data for the current user
     require_identity                        # Halts with 403 if there is no current user
     require_god                             # Halts with 403 if the current user is not a god
-    require_access_to_path(path)            # Halts with 403 if the current user is not a member in the checkpoint access group for that path
+    require_access_to_path(path)            # Halts with 403 if the current user is not a member of a checkpoint access group with privileged access to that path
     require_parameters(parameters, *keys)   # Halts with 409 if the at least one of the provided keys is not in the params-hash
 
 ### Testing Sinatra APIs
