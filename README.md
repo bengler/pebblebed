@@ -56,7 +56,7 @@ Other helper methods provided by this extension:
     current_identity                        # Returns the a DeepStruct record with the vital data for the current user
     require_identity                        # Halts with 403 if there is no current user
     require_god                             # Halts with 403 if the current user is not a god
-    require_access_to_path                  # Halts with 403 if the current user is not a member in the checkpoint access group for that path
+    require_access_to_path(path)            # Halts with 403 if the current user is not a member in the checkpoint access group for that path
     require_parameters(parameters, *keys)   # Halts with 409 if the at least one of the provided keys is not in the params-hash
 
 ### Testing Sinatra APIs
