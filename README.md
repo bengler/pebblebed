@@ -57,6 +57,7 @@ Other helper methods provided by this extension:
     require_identity                        # Halts with 403 if there is no current user
     require_god                             # Halts with 403 if the current user is not a god
     require_access_to_path(path)            # Halts with 403 if the current user is not a member of a checkpoint access group with privileged access to that path
+    require_action_allowed(action, uid)     # Halts with 403 if the current user is not allowed by checkpoint to perform this action for that uid
     require_parameters(parameters, *keys)   # Halts with 409 if the at least one of the provided keys is not in the params-hash
 
 ### Testing Sinatra APIs

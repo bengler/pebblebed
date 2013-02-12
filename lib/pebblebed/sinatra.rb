@@ -93,6 +93,15 @@ module Sinatra
         halt 403, "Access denied."
       end
 
+      def require_action_allowed(action, uid)
+        require_identity
+        uid = ::Pebblebed::Uid.new(uid) if uid.is_a?(String)
+        return if current_identity.god and uid.path.split(".")[0] == current_identity.realm
+        res = pebbles.checkpoint.get("/callbacks/allowed/#{action}/#{uid}")
+        return if res['allowed']
+        halt 403, ":#{action} denied for #{uid} : #{res['reason']}"
+      end
+
       def limit_offset_collection(collection, options)
         limit = (options[:limit] || 20).to_i
         offset = (options[:offset] || 0).to_i
