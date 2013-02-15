@@ -93,12 +93,13 @@ module Sinatra
         halt 403, "Access denied."
       end
 
-      def require_action_allowed(action, uid)
+      def require_action_allowed(action, uid, options={})
         require_identity
         uid = ::Pebblebed::Uid.new(uid) if uid.is_a?(String)
         return if current_identity.god and uid.path.split(".")[0] == current_identity.realm
         res = pebbles.checkpoint.get("/callbacks/allowed/#{action}/#{uid}")
-        return res['allowed'] if res['allowed']
+        return res['allowed'] if res['allowed'] == true or
+          (res['allowed'] == "default" and options[:default])
         halt 403, ":#{action} denied for #{uid} : #{res['reason']}"
       end
 
