@@ -1,6 +1,8 @@
 Pebblebed
 =========
 
+[![Build Status](https://semaphoreapp.com/api/v1/projects/0e497128541445910ba532d3ea1990799ae4e2a6/28288/badge.png)](https://semaphoreapp.com/projects/1582/branches/28288)
+
 This gem contains a number of tools for ruby that wants to be a good pebble.
 
 Usage
