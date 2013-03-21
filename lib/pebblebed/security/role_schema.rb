@@ -2,15 +2,16 @@ module Pebblebed
   module Security
     class RoleSchema
 
-      attr_reader :connector, :identity
+      attr_reader :connector, :identity, :policy
 
       class << self
         attr_reader :roles
       end
 
-      def initialize(connector, identity)
+      def initialize(connector, identity, policy=nil)
         @connector = connector
         @identity = identity
+        @policy = policy
       end
 
       def role
@@ -24,27 +25,39 @@ module Pebblebed
 
       def find_current_role
         the_role = begin
-          capabilities = []
+          collected_roles = []
           self.class.roles.each do |role|
+            collected_capabilities = []
             if role[:requirements].any?
               role[:requirements].each do |requirement|
-                begin
-                  if self.__send__("check_#{requirement}".to_sym)
-                    the_role = role
-                    capabilities << role
+                # Special exceptions based on the optional policy
+                if policy and requirement == :verified_mobile and !policy.require_verified_mobile
+                  collected_capabilities << requirement
+                elsif policy and requirement == :verified_name and !policy.require_verified_name
+                  collected_capabilities << requirement
+                # Regular check based on implemented check-methods
+                else
+                  begin
+                    if __send__("check_#{requirement}".to_sym)
+                      collected_capabilities << requirement
+                    end
+                  rescue NoMethodError
+                    raise NoMethodError, "You must implement method named :check_#{requirement} that returns true or false"
                   end
-                rescue NoMethodError
-                  raise NoMethodError, "You must implement method named :check_#{requirement} that returns true or false"
                 end
+              end
+              if (role[:requirements] & collected_capabilities) == role[:requirements]
+                the_role = role
+                collected_roles << role
               end
             else
               the_role = role
-              capabilities << role
+              collected_roles << role
             end
           end
           the_role.merge(:upgrades => begin
               result = {}
-              (self.class.roles - capabilities).each{|r|
+              (self.class.roles - collected_roles).each{|r|
                 result[:"#{r[:name]}"] = r[:requirements]
               }
               result

@@ -14,14 +14,17 @@ describe Pebblebed::Security::RoleSchema do
 
   class CustomRoleSchema < Pebblebed::Security::RoleSchema
     role :guest, :capabilities => [], :requirements => []
+    role :identified, :capabilities => [:kudo], :requirements => [:logged_in]
     role :contributor, :capabilities => [:comment, :kudo], :requirements => [:logged_in, :verified_mobile]
 
     def check_logged_in
-      return false
+      return true if identity and identity['identity']
+      false
     end
 
     def check_verified_mobile
-      return false
+      return true if identity and identity['identity'] and identity['identity']['verified_mobile']
+      false
     end
 
   end
@@ -34,8 +37,17 @@ describe Pebblebed::Security::RoleSchema do
     DeepStruct.wrap({})
   }
 
-  let(:user) {
+  let(:contributor) {
     DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false})
+  }
+
+  let(:contributor_with_mobile) {
+    DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false, :verified_mobile => true})
+  }
+
+
+  let(:policy) {
+    DeepStruct.wrap({:require_verified_mobile => false})
   }
 
   context "invalid role schema" do
@@ -50,31 +62,92 @@ describe Pebblebed::Security::RoleSchema do
         }.to raise_error(NoMethodError, "You must implement method named :check_logged_in that returns true or false")
     end
   end
+
+  context "basics" do
+    let(:schema) {
+      CustomRoleSchema.new(connector, guest, policy)
+    }
+
+    it "has connector and identity attributes" do
+      schema.connector.should eq connector
+      schema.identity.should eq guest
+      schema.policy.should eq policy
+    end
+
+    it "has the correct roles defined" do
+      CustomRoleSchema.roles.should ==  [{:capabilities=>[], :requirements=>[], :name=>:guest, :role_rank=>0}, {:capabilities=>[:kudo], :requirements=>[:logged_in], :name=>:identified, :role_rank=>1}, {:capabilities=>[:comment, :kudo], :requirements=>[:logged_in, :verified_mobile], :name=>:contributor, :role_rank=>2}]
+    end
+  end
+
   context "as guest" do
 
     let(:schema) {
       CustomRoleSchema.new(connector, guest)
     }
 
-    it "has connector and identity attributes" do
-      schema.connector.should eq connector
-      schema.identity.should eq guest
+    it "returns the guest role" do
+      schema.role.should == {:current=>:guest, :capabilities=>[], :upgrades=>{:identified=>[:logged_in], :contributor=>[:logged_in, :verified_mobile]}}
     end
 
-    it "has the correct roles defined" do
-      CustomRoleSchema.roles.should ==  [{:capabilities=>[], :requirements=>[], :name=>:guest, :role_rank=>0}, {:capabilities=>[:comment, :kudo], :requirements=>[:logged_in, :verified_mobile], :name=>:contributor, :role_rank=>1}]
-    end
+  end
 
-    it "returns the current role" do
-      schema.role.should == {
-        :current => :guest,
-        :capabilities => [],
-        :upgrades => {
-          :contributor => [:logged_in, :verified_mobile]
+  context "as contributor" do
+
+    context "with no policy" do
+
+      context "with a contributor without verified mobile" do
+
+        let(:schema) {
+          CustomRoleSchema.new(connector, contributor)
         }
-      }
+
+        it "returns the idenitified role" do
+          schema.role.should == {:current=>:identified, :capabilities=>[:kudo], :upgrades=>{:contributor=>[:logged_in, :verified_mobile]}}
+        end
+
+      end
+
+      context "with a contributor with a verified mobile" do
+
+        let(:schema) {
+          CustomRoleSchema.new(connector, contributor_with_mobile)
+        }
+
+        it "returns the contributor role" do
+          schema.role.should == {:current=>:contributor, :capabilities=>[:comment, :kudo], :upgrades=>{}}
+        end
+
+      end
+
     end
 
+    context "with a policy that doesn't require mobile verification" do
+
+      context "with a contributor without verified mobile" do
+
+        let(:schema) {
+          CustomRoleSchema.new(connector, contributor, policy)
+        }
+
+        it "returns the idenitified role" do
+          schema.role.should == {:current=>:contributor, :capabilities=>[:comment, :kudo], :upgrades=>{}}
+        end
+
+      end
+
+      context "with a contributor with a verified mobile" do
+
+        let(:schema) {
+          CustomRoleSchema.new(connector, contributor_with_mobile, policy)
+        }
+
+        it "returns the contributor role" do
+          schema.role.should == {:current=>:contributor, :capabilities=>[:comment, :kudo], :upgrades=>{}}
+        end
+
+      end
+
+    end
 
   end
 
