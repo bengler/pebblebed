@@ -129,7 +129,7 @@ describe Pebblebed::Security::RoleSchema do
           CustomRoleSchema.new(connector, contributor, policy)
         }
 
-        it "returns the idenitified role" do
+        it "returns the contributor role" do
           schema.role.should == {:current=>:contributor, :capabilities=>[:comment, :kudo], :upgrades=>{}}
         end
 
