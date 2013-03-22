@@ -71,6 +71,23 @@ describe Pebblebed::Security::RoleSchema do
     it "has the correct roles defined" do
       CustomRoleSchema.roles.should ==  [{:capabilities=>[], :requirements=>[], :name=>:guest, :role_rank=>0}, {:capabilities=>[:kudo], :requirements=>[:logged_in], :name=>:identified, :role_rank=>1}, {:capabilities=>[:comment, :kudo], :requirements=>[:logged_in, :verified_mobile], :name=>:contributor, :role_rank=>2}]
     end
+
+    it "has an answer to requirements for a role" do
+      CustomRoleSchema.requirements_for_role(:identified).should == [:logged_in]
+      CustomRoleSchema.requirements_for_role(:contributor).should == [:logged_in, :verified_mobile]
+    end
+
+    it "gives a exception when the role is not found" do
+      expect {
+        CustomRoleSchema.requirements_for_role(:foo)
+      }.to raise_error(Pebblebed::Security::RoleSchema::UndefinedRole)
+    end
+
+    it "gives the missing requirements for current role compared to a role" do
+      schema.missing_requirements_for_role(:identified).should ==  [:logged_in]
+      schema.missing_requirements_for_role(:contributor).should ==  [:logged_in, :verified_mobile]
+    end
+
   end
 
   context "as guest" do
