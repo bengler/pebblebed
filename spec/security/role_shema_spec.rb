@@ -45,11 +45,6 @@ describe Pebblebed::Security::RoleSchema do
     DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false, :verified_mobile => true})
   }
 
-
-  let(:policy) {
-    DeepStruct.wrap({:require_verified_mobile => false})
-  }
-
   context "invalid role schema" do
 
     let(:schema) {
@@ -65,13 +60,12 @@ describe Pebblebed::Security::RoleSchema do
 
   context "basics" do
     let(:schema) {
-      CustomRoleSchema.new(connector, guest, policy)
+      CustomRoleSchema.new(connector, guest)
     }
 
     it "has connector and identity attributes" do
       schema.connector.should eq connector
       schema.identity.should eq guest
-      schema.policy.should eq policy
     end
 
     it "has the correct roles defined" do
@@ -92,8 +86,6 @@ describe Pebblebed::Security::RoleSchema do
   end
 
   context "as contributor" do
-
-    context "with no policy" do
 
       context "with a contributor without verified mobile" do
 
@@ -118,36 +110,6 @@ describe Pebblebed::Security::RoleSchema do
         end
 
       end
-
-    end
-
-    context "with a policy that doesn't require mobile verification" do
-
-      context "with a contributor without verified mobile" do
-
-        let(:schema) {
-          CustomRoleSchema.new(connector, contributor, policy)
-        }
-
-        it "returns the contributor role" do
-          schema.role.should == {:current=>:contributor, :capabilities=>[:comment, :kudo], :upgrades=>{}}
-        end
-
-      end
-
-      context "with a contributor with a verified mobile" do
-
-        let(:schema) {
-          CustomRoleSchema.new(connector, contributor_with_mobile, policy)
-        }
-
-        it "returns the contributor role" do
-          schema.role.should == {:current=>:contributor, :capabilities=>[:comment, :kudo], :upgrades=>{}}
-        end
-
-      end
-
-    end
 
   end
 
