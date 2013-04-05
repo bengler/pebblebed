@@ -29,13 +29,13 @@ module Pebblebed
         current_role = roles.select {|r| r[:name] == @role[:name] }.first
         for_role = roles.select {|r| role.to_sym == r[:name] }.first
         raise UndefinedRole, "The role :#{role} is not defined." unless for_role
-        roles[roles.index(current_role)..roles.index(for_role)].map{|r| r[:requirements]}.flatten.uniq
+        roles[roles.index(current_role)..roles.index(for_role)].map{|r| r[:requirements]}.flatten.uniq.compact
       end
 
       def self.requirements_for_role(role)
         the_role = @roles.select {|r| r[:name] == role.to_sym }.first
         raise UndefinedRole, "The role :#{role} is not defined." unless the_role
-        @roles[0..@roles.index(the_role)].map{|r| r[:requirements]}.flatten.uniq
+        @roles[0..@roles.index(the_role)].map{|r| r[:requirements]}.flatten.uniq.compact
       end
 
       def self.role(name, options)
