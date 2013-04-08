@@ -73,14 +73,23 @@ module Pebblebed
               collected_roles << role
             end
           end
-          the_role.merge(:upgrades => begin
-              result = {}
-              (self.class.roles - collected_roles).each{|r|
-                result[:"#{r[:name]}"] = r[:requirements]
-              }
-              result
+          owned_capabilities = collected_roles.map{|c| c[:capabilities]}.flatten.compact.uniq
+          all_capabilities = self.class.roles.map{|r| r[:capabilities]}.flatten.compact.uniq
+          the_role.merge!(:upgrades => begin
+              upgraders = {}
+              all_capabilities.each do |c|
+                next if owned_capabilities.include?(c)
+                self.class.roles.select{|r| r[:capabilities].include?(c)}.each do |r|
+                  upgraders[c] ||=  []
+                  upgraders[c] << r[:requirements]
+                  upgraders[c].flatten!.uniq!
+                end
+              end
+              upgraders
             end
           )
+          the_role[:capabilities] = owned_capabilities
+          the_role
         end
       end
 

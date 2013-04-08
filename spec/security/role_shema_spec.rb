@@ -15,7 +15,7 @@ describe Pebblebed::Security::RoleSchema do
   class CustomRoleSchema < Pebblebed::Security::RoleSchema
     role :guest, :capabilities => [], :requirements => []
     role :identified, :capabilities => [:kudo], :requirements => [:logged_in]
-    role :contributor, :capabilities => [:comment, :kudo], :requirements => [:logged_in, :verified_mobile]
+    role :contributor, :capabilities => [:comment], :requirements => [:logged_in, :verified_mobile]
 
     def check_logged_in
       return true if identity and identity['identity']
@@ -69,7 +69,7 @@ describe Pebblebed::Security::RoleSchema do
     end
 
     it "has the correct roles defined" do
-      CustomRoleSchema.roles.should ==  [{:capabilities=>[], :requirements=>[], :name=>:guest, :role_rank=>0}, {:capabilities=>[:kudo], :requirements=>[:logged_in], :name=>:identified, :role_rank=>1}, {:capabilities=>[:comment, :kudo], :requirements=>[:logged_in, :verified_mobile], :name=>:contributor, :role_rank=>2}]
+      CustomRoleSchema.roles.should ==  [{:capabilities=>[], :requirements=>[], :name=>:guest, :role_rank=>0, :upgrades=>{:kudo=>[:logged_in], :comment=>[:logged_in, :verified_mobile]}}, {:capabilities=>[:kudo], :requirements=>[:logged_in], :name=>:identified, :role_rank=>1}, {:capabilities=>[:comment], :requirements=>[:logged_in, :verified_mobile], :name=>:contributor, :role_rank=>2}]
     end
 
     it "has an answer to requirements for a role" do
@@ -97,7 +97,7 @@ describe Pebblebed::Security::RoleSchema do
     }
 
     it "returns the guest role" do
-      schema.role.should == {:current=>:guest, :capabilities=>[], :upgrades=>{:identified=>[:logged_in], :contributor=>[:logged_in, :verified_mobile]}}
+      schema.role.should == {:current=>:guest, :capabilities=>[], :upgrades=>{:kudo=>[:logged_in], :comment=>[:logged_in, :verified_mobile]}}
     end
 
   end
@@ -111,7 +111,7 @@ describe Pebblebed::Security::RoleSchema do
         }
 
         it "returns the idenitified role" do
-          schema.role.should == {:current=>:identified, :capabilities=>[:kudo], :upgrades=>{:contributor=>[:logged_in, :verified_mobile]}}
+          schema.role.should == {:current=>:identified, :capabilities=>[:kudo], :upgrades=>{:comment=>[:logged_in, :verified_mobile]}}
         end
 
       end
@@ -123,7 +123,7 @@ describe Pebblebed::Security::RoleSchema do
         }
 
         it "returns the contributor role" do
-          schema.role.should == {:current=>:contributor, :capabilities=>[:comment, :kudo], :upgrades=>{}}
+          schema.role.should ==  {:current=>:contributor, :capabilities=>[:kudo, :comment], :upgrades=>{}}
         end
 
       end
