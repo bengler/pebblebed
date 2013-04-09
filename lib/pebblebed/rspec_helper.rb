@@ -31,7 +31,7 @@ module Pebblebed
 
         identity = nil
         unless guest
-          identity = options.merge(default_identity_options)
+          identity = default_identity_options.merge(options)
         end
 
         @current_identity = DeepStruct.wrap(identity)
