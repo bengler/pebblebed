@@ -4,12 +4,12 @@ module Pebblebed
   module RSpecHelper
     def god!(options = {})
       options.delete(:god)
-      stub_current_identity(options.merge(:id => 1, :god => true))
+      stub_current_identity({:id => 1, :god => true}.merge(options))
     end
 
     def user!(options = {})
       options.delete(:god)
-      stub_current_identity(options.merge(:id => 1, :god => false))
+      stub_current_identity({:id => 1, :god => false}.merge(options))
     end
 
     def guest!
@@ -22,7 +22,7 @@ module Pebblebed
 
     def another_identity
       id = current_identity ? (current_identity.id + 1) : 1
-      DeepStruct.wrap(default_identity_options.merge(:id => id, :god => false))
+      DeepStruct.wrap({:id => id, :god => false}.merge(default_identity_options))
     end
 
     private
@@ -31,7 +31,7 @@ module Pebblebed
 
         identity = nil
         unless guest
-          identity = default_identity_options.merge(options)
+          identity = options.merge(default_identity_options)
         end
 
         @current_identity = DeepStruct.wrap(identity)
