@@ -74,6 +74,7 @@ module Pebblebed
             end
           end
           owned_capabilities = collected_roles.map{|c| c[:capabilities]}.flatten.compact.uniq
+          owned_requirements = collected_roles.map{|c| c[:requirements]}.flatten.compact.uniq
           all_capabilities = self.class.roles.map{|r| r[:capabilities]}.flatten.compact.uniq
           the_role.merge!(:upgrades => begin
               upgraders = {}
@@ -81,7 +82,7 @@ module Pebblebed
                 next if owned_capabilities.include?(c)
                 self.class.roles.select{|r| r[:capabilities].include?(c)}.each do |r|
                   upgraders[c] ||=  []
-                  upgraders[c] << r[:requirements]
+                  upgraders[c] << r[:requirements] - owned_requirements
                   upgraders[c].flatten!.uniq!
                 end
               end

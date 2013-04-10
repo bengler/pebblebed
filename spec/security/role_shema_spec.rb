@@ -111,7 +111,7 @@ describe Pebblebed::Security::RoleSchema do
         }
 
         it "returns the idenitified role" do
-          schema.role.should == {:current=>:identified, :capabilities=>[:kudo], :upgrades=>{:comment=>[:logged_in, :verified_mobile]}}
+          schema.role.should == {:current=>:identified, :capabilities=>[:kudo], :upgrades=>{:comment=>[:verified_mobile]}}
         end
 
       end
