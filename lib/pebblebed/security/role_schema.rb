@@ -24,14 +24,6 @@ module Pebblebed
         }
       end
 
-      def missing_requirements_for_role(role)
-        roles = self.class.roles
-        current_role = roles.select {|r| r[:name] == @role[:name] }.first
-        for_role = roles.select {|r| role.to_sym == r[:name] }.first
-        raise UndefinedRole, "The role :#{role} is not defined." unless for_role
-        roles[roles.index(current_role)..roles.index(for_role)].map{|r| r[:requirements]}.flatten.uniq.compact
-      end
-
       def self.requirements_for_role(role)
         the_role = @roles.select {|r| r[:name] == role.to_sym }.first
         raise UndefinedRole, "The role :#{role} is not defined." unless the_role
@@ -51,20 +43,20 @@ module Pebblebed
       def find_current_role
         the_role = begin
           collected_roles = []
+          collected_requirements = []
           self.class.roles.each do |role|
-            collected_capabilities = []
             if role[:requirements].any?
               role[:requirements].each do |requirement|
                 # Check based on implemented check-methods in the subclass.
                 begin
                   if __send__("check_#{requirement}".to_sym)
-                    collected_capabilities << requirement
+                    collected_requirements << requirement
                   end
                 rescue NoMethodError
                   raise NoMethodError, "You must implement method named :check_#{requirement} that returns true or false"
                 end
               end
-              if (role[:requirements] & collected_capabilities) == role[:requirements]
+              if (role[:requirements] & collected_requirements) == role[:requirements]
                 the_role = role
                 collected_roles << role
               end
@@ -74,7 +66,6 @@ module Pebblebed
             end
           end
           owned_capabilities = collected_roles.map{|c| c[:capabilities]}.flatten.compact.uniq
-          owned_requirements = collected_roles.map{|c| c[:requirements]}.flatten.compact.uniq
           all_capabilities = self.class.roles.map{|r| r[:capabilities]}.flatten.compact.uniq
           the_role.merge!(:upgrades => begin
               upgraders = {}
@@ -82,7 +73,7 @@ module Pebblebed
                 next if owned_capabilities.include?(c)
                 self.class.roles.select{|r| r[:capabilities].include?(c)}.each do |r|
                   upgraders[c] ||=  []
-                  upgraders[c] << r[:requirements] - owned_requirements
+                  upgraders[c] << r[:requirements] - collected_requirements
                   upgraders[c].flatten!.uniq!
                 end
               end

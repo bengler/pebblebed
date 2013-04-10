@@ -83,11 +83,6 @@ describe Pebblebed::Security::RoleSchema do
       }.to raise_error(Pebblebed::Security::RoleSchema::UndefinedRole)
     end
 
-    it "gives the missing requirements for current role compared to a role" do
-      schema.missing_requirements_for_role(:identified).should ==  [:logged_in]
-      schema.missing_requirements_for_role(:contributor).should ==  [:logged_in, :verified_mobile]
-    end
-
   end
 
   context "as guest" do
@@ -110,7 +105,7 @@ describe Pebblebed::Security::RoleSchema do
           CustomRoleSchema.new(connector, contributor)
         }
 
-        it "returns the idenitified role" do
+        it "returns the idenitified role with an upgrade for :verified_mobile only" do
           schema.role.should == {:current=>:identified, :capabilities=>[:kudo], :upgrades=>{:comment=>[:verified_mobile]}}
         end
 
