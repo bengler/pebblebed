@@ -58,7 +58,7 @@ module Pebblebed
         if hash and hash.is_a?(Hash)
           hash.keys.each do |key|
             val = hash.delete(key)
-            hash[key.to_s] = val.is_a?(Hash) ? val.deep_stringify_keys(val) : val
+            hash[key.to_s] = val.is_a?(Hash) ? deep_stringify_keys(val) : val
           end
         end
         hash
