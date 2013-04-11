@@ -22,11 +22,12 @@ module Pebblebed
 
     def another_identity
       id = current_identity ? (current_identity.id + 1) : 1
-      DeepStruct.wrap({:id => id, :god => false}.merge(default_identity_options))
+      DeepStruct.wrap(deep_stringify_keys({:id => id, :god => false}.merge(default_identity_options)))
     end
 
     private
       def stub_current_identity(options = {})
+
         guest = options.empty?
 
         identity = nil
@@ -34,7 +35,7 @@ module Pebblebed
           identity = default_identity_options.merge(options)
         end
 
-        @current_identity = DeepStruct.wrap(identity)
+        @current_identity = DeepStruct.wrap(deep_stringify_keys(identity))
 
         checkpoint = stub(:get => DeepStruct.wrap(:identity => identity), :service_url => 'http://example.com')
         Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
@@ -51,6 +52,16 @@ module Pebblebed
 
       def stub_current_session(session)
         app.any_instance.stub(:current_session).and_return session
+      end
+
+      def deep_stringify_keys(hash)
+        if hash and hash.is_a?(Hash)
+          hash.keys.each do |key|
+            val = hash.delete(key)
+            hash[key.to_s] = val.is_a?(Hash) ? val.deep_stringify_keys(val) : val
+          end
+        end
+        hash
       end
 
   end
