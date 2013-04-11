@@ -52,8 +52,9 @@ module Pebblebed
                   if __send__("check_#{requirement}".to_sym)
                     collected_requirements << requirement
                   end
-                rescue NoMethodError
-                  raise NoMethodError, "You must implement method named :check_#{requirement} that returns true or false"
+                rescue NoMethodError => e
+                  raise NoMethodError, "You must implement method named :check_#{requirement} that returns true or false" if e.message.match("undefined method.*check_#{requirement}")
+                  raise e
                 end
               end
               if (role[:requirements] & collected_requirements) == role[:requirements]
