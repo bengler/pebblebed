@@ -12,6 +12,12 @@ module Pebblebed
       Pebblebed.require_service(name, options)
     end
 
+    def statsd(namespace, host = 'localhost', port = 8125)
+      statsd = Statsd.new(host, port)
+      statsd.namespace = namespace
+      Pebblebed.statsd = statsd
+    end
+
     def base_uri(value)
       Pebblebed.base_uri = value
     end
@@ -39,6 +45,14 @@ module Pebblebed
     def host=(value)
       @host = value
     end
+
+    # Statsd client.
+    def statsd
+      @statsd ||= Statsd.new('localhost')
+    end
+
+    # Statsd client.
+    attr_writer :statsd
 
     def memcached
       raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached

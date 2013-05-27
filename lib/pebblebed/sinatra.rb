@@ -120,6 +120,7 @@ module Sinatra
 
     def self.registered(app)
       app.helpers(Sinatra::Pebblebed::Helpers)
+      app.use ::Pebblebed::Rack::Statsd
     end
 
     def declare_pebbles(&block)

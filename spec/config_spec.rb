@@ -69,4 +69,14 @@ describe Pebblebed do
     Pebblebed.root_url_for(:checkpoint).to_s.should eq "https://example.org/api/checkpoint/v1/"
     Pebblebed.root_url_for(:checkpoint, :base_uri => 'https://checkpoint.dev').to_s.should eq "https://checkpoint.dev/api/checkpoint/v1/"
   end
+
+  it "allows setting statsd parameters" do
+    Pebblebed.config do
+      statsd 'bing', 'localhost', 8000
+    end
+    Pebblebed.statsd.namespace.should eq 'bing'
+    Pebblebed.statsd.host.should eq 'localhost'
+    Pebblebed.statsd.port.should eq 8000
+  end
+
 end

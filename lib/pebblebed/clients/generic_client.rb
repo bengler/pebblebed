@@ -44,5 +44,7 @@ module Pebblebed
       params
     end
 
+    attr_reader :service_name
+
   end
 end

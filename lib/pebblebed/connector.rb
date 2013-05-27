@@ -11,7 +11,8 @@ module Pebblebed
 
     def [](service)
       client_class = self.class.client_class_for(service)
-      (@clients[service.to_sym] ||= client_class.new(@key, Pebblebed.root_url_for(service.to_s, @url_opts)))
+      @clients[service.to_sym] ||= StatsdClient.new(service.to_s,
+        client_class.new(@key, Pebblebed.root_url_for(service.to_s, @url_opts)))
     end
 
     # Returns a quorum client that talks to the provided list of
@@ -21,7 +22,6 @@ module Pebblebed
     def quorum(services = nil, session_key = nil)
       QuorumClient.new(services || Pebblebed.services, session_key)
     end
-
 
     def parts
       @@parts ||= Pebblebed::Parts.new(self)
