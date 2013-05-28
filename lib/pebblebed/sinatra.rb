@@ -85,12 +85,16 @@ module Sinatra
         halt 409, "missing parameters: #{missing.join(', ')}" unless missing.empty?
       end
 
-      def require_access_to_path(path)
-        require_identity
-        return if current_identity.god and path.split(".")[0] == current_identity.realm
+      def has_access_to_path?(path)
+        return false unless current_identity
+        return true if current_identity.god and path.split(".")[0] == current_identity.realm
         res = pebbles.checkpoint.get("/identities/#{current_identity.id}/access_to/#{path}")
-        return if res['access'] and res['access']['granted'] == true
-        halt 403, "Access denied."
+        res['access'] and res['access']['granted'] == true
+      end
+
+      def require_access_to_path(path)
+        require_identity        
+        halt 403, "Access denied." unless has_access_to_path?(path)
       end
 
       def require_action_allowed(action, uid, options={})
