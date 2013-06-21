@@ -1,3 +1,3 @@
 module Pebblebed
-  VERSION = "0.0.55"
+  VERSION = "0.1.0"
 end
