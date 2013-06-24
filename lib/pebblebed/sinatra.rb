@@ -97,7 +97,7 @@ module Sinatra
         require_identity
         uid = ::Pebblebed::Uid.new(uid) if uid.is_a?(String)
         return if current_identity.god and uid.path.split(".")[0] == current_identity.realm
-        res = pebbles.checkpoint.get("/callbacks/allowed/#{action}/#{uid}")
+        res = pebbles.checkpoint.post("/callbacks/allowed/#{action}/#{uid}")
         return res['allowed'] if res['allowed'] == true or
           (res['allowed'] == "default" and options[:default])
         halt 403, ":#{action} denied for #{uid} : #{res['reason']}"

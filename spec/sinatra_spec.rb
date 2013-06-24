@@ -193,7 +193,7 @@ describe Sinatra::Pebblebed do
       specify "is disallowed" do
         user!
         checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-        checkpoint.should_receive(:get).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => false, :reason => "You are not worthy!"))
+        checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => false, :reason => "You are not worthy!"))
         Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
         post '/create/post.foo:testrealm'
         last_response.status.should == 403
@@ -204,7 +204,7 @@ describe Sinatra::Pebblebed do
       specify "is allowed" do
         user!
         checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-        checkpoint.should_receive(:get).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => true))
+        checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => true))
         Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
         post '/create/post.foo:testrealm'
         last_response.body.should == "You are creative"
@@ -213,7 +213,7 @@ describe Sinatra::Pebblebed do
         specify "is disallowed" do
           user!
           checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-          checkpoint.should_receive(:get).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
+          checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
           Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
           post '/create2/post.foo:testrealm'
           last_response.status.should == 403
@@ -223,7 +223,7 @@ describe Sinatra::Pebblebed do
         specify "is disallowed" do
           user!
           checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-          checkpoint.should_receive(:get).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
+          checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
           Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
           post '/create/post.foo:testrealm'
           last_response.status.should == 403
@@ -233,7 +233,7 @@ describe Sinatra::Pebblebed do
         specify "is allowed" do
           user!
           checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-          checkpoint.should_receive(:get).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
+          checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
           Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
           post '/create3/post.foo:testrealm'
           last_response.body.should == "You are creative"
