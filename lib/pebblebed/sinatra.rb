@@ -120,11 +120,6 @@ module Sinatra
 
     def self.registered(app)
       app.helpers(Sinatra::Pebblebed::Helpers)
-
-      app.error ::Pebblebed::HttpNotFoundError do
-        [404,  env['sinatra.error'].message]
-      end
-
     end
 
     def declare_pebbles(&block)
