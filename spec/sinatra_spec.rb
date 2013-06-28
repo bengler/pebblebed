@@ -242,21 +242,6 @@ describe Sinatra::Pebblebed do
     end
   end
 
-  describe "error handling" do
-    before(:each) { guest! }
-
-    it "Adds graceful handling of HttpNotFoundError exceptions" do
-      get '/nonexistant'
-      last_response.status.should == 404
-    end
-
-    it "Gives the error message of HttpNotFoundError as response body" do
-      get '/nonexistant'
-      last_response.status.should == 404
-      last_response.body.should == 'Not found /nonexistant'
-    end
-  end
-
   describe "identity caching" do
 
     context "with logged in user" do
