@@ -129,8 +129,7 @@ describe Sinatra::Pebblebed do
 
   describe "with access groups control" do
     let(:checkpoint) {
-      checkpoint = stub
-      checkpoint.stub!(:service_url => 'http://example.com')
+      checkpoint = double(:service_url => 'http://example.com')
       checkpoint
     }
     context "as a guest" do
@@ -171,8 +170,7 @@ describe Sinatra::Pebblebed do
 
   describe "with checkpoint psm2 callbacks" do
     let(:checkpoint) {
-      checkpoint = stub
-      checkpoint.stub!(:service_url => 'http://example.com')
+      checkpoint = double(:service_url => 'http://example.com')
       checkpoint
     }
     context "as a guest" do

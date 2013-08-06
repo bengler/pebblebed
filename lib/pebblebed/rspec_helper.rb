@@ -37,7 +37,7 @@ module Pebblebed
 
         @current_identity = DeepStruct.wrap(deep_stringify_keys(identity))
 
-        checkpoint = stub(:get => DeepStruct.wrap(:identity => identity), :service_url => 'http://example.com')
+        checkpoint = double(:get => DeepStruct.wrap(:identity => identity), :service_url => 'http://example.com')
         Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
 
         unless guest

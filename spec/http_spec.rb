@@ -7,8 +7,8 @@ require 'deepstruct'
 
 describe Pebblebed::Http do
 
-  let :mock_pebble do
-    MockPebble.new
+  def mock_pebble
+    @mp ||= MockPebble.new
   end
 
   let :pebble_url do
