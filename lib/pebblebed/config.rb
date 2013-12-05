@@ -8,6 +8,10 @@ module Pebblebed
       Pebblebed.memcached = value
     end
 
+    def session_cookie(value)
+      Pebblebed.session_cookie = value
+    end
+
     def service(name, options = {})
       Pebblebed.require_service(name, options)
     end
@@ -49,6 +53,14 @@ module Pebblebed
       @memcached = value
     end
 
+    def session_cookie
+      @session_cookie || 'checkpoint.session'
+    end
+
+    def session_cookie=(value)
+      @session_cookie = value
+    end
+
     def services
       @services.keys
     end
@@ -68,8 +80,12 @@ module Pebblebed
       @services[service.to_sym][:version] || 1
     end
 
+    def path_of(service)
+      @services[service.to_sym][:path] || "/api/#{service}"
+    end
+
     def root_url_for(service, url_opts={})
-      URI.join(base_url_for(url_opts), "/api/#{service}/v#{version_of(service)}/")
+      URI.join(base_url_for(url_opts), "#{path_of(service)}/v#{version_of(service)}/")
     end
 
     def base_url_for(url_opts)
