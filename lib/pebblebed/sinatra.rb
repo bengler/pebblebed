@@ -28,7 +28,7 @@ module Sinatra
       end
 
       def current_session
-        params[:session] || request.cookies['checkpoint.session']
+        params[:session] || request.cookies[::Pebblebed.session_cookie]
       end
       alias :checkpoint_session :current_session
 
@@ -93,7 +93,7 @@ module Sinatra
       end
 
       def require_access_to_path(path)
-        require_identity        
+        require_identity
         halt 403, "Access denied." unless has_access_to_path?(path)
       end
 
