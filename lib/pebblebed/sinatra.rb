@@ -121,6 +121,7 @@ module Sinatra
 
     def self.registered(app)
       app.helpers(Sinatra::Pebblebed::Helpers)
+      app.use ::Pebblebed::Tracing
     end
 
     def declare_pebbles(&block)

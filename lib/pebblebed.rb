@@ -1,4 +1,5 @@
 require "pebblebed/version"
+require 'pebblebed/tracing'
 require 'pebblebed/http'
 require 'pebblebed/connector'
 require 'pebblebed/config'

@@ -56,15 +56,16 @@ module Pebblebed
 
     def self.get(url = nil, params = nil, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      handle_curl_response(Curl::Easy.perform(url_with_params(url, params)))
+      handle_curl_response(Curl::Easy.perform(url_with_params(url, params)) do |curl|
+        update_headers(curl)
+      end)
     end
 
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
       handle_curl_response(Curl::Easy.http_post(url.to_s, body) do |curl|
-        curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = content_type
+        update_headers(curl, content_type)
       end)
     end
 
@@ -72,8 +73,7 @@ module Pebblebed
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
       handle_curl_response(Curl::Easy.http_put(url.to_s, body) do |curl|
-        curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = content_type
+        update_headers(curl, content_type)
       end)
     end
 
@@ -83,6 +83,15 @@ module Pebblebed
     end
 
     private
+
+    def self.update_headers(curl, content_type = nil)
+      h = curl.headers
+      h['Accept'] = 'application/json'
+      h['Content-Type'] = content_type if content_type
+      if (id = Tracing.current_id)
+        h['Pebblebed-Trace'] = id
+      end
+    end
 
     def self.serialize_params(params)
       if String === params
