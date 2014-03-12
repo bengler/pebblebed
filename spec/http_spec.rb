@@ -1,30 +1,9 @@
 # encoding: utf-8
 
 require 'spec_helper'
-require 'yajl/json_gem'
 require 'pebblebed/http'
-require 'deepstruct'
 
 describe Pebblebed::Http do
-
-  def mock_pebble
-    @mp ||= MockPebble.new
-  end
-
-  let :pebble_url do
-    "http://localhost:8666/api/mock/v1/echo"
-  end
-
-  before :all do
-    # Starts the mock pebble at localhost:8666/api/mock/v1
-    mock_pebble.start
-  end
-
-  after :all do
-    mock_pebble.shutdown
-    # give webrick some time to cool down
-    sleep 0.1
-  end
 
   it "knows how to pack params into a http query string" do
     Pebblebed::Http.send(:url_with_params, URI("/dingo/"), {a:1}).should eq "/dingo/?a=1"
@@ -60,7 +39,7 @@ describe Pebblebed::Http do
 
   it "encodes posts and puts as json if the params is a hash" do
     ['post', 'put'].each do |method|
-      response = Pebblebed::Http.send(method.to_sym, pebble_url, {hello:'world'})
+      response = Pebblebed::Http.send(method.to_sym, mock_pebble_url, {hello:'world'})
       result = JSON.parse(response.body)
       result["CONTENT_TYPE"].should =~ %r{^application/json\b}i
       JSON.parse(result["BODY"])['hello'].should eq 'world'
@@ -69,7 +48,7 @@ describe Pebblebed::Http do
 
   it "encodes posts and puts as text/plain if param is string" do
     ['post', 'put'].each do |method|
-      response = Pebblebed::Http.send(method.to_sym, pebble_url, "Hello world")
+      response = Pebblebed::Http.send(method.to_sym, mock_pebble_url, "Hello world")
       result = JSON.parse(response.body)
       result["CONTENT_TYPE"].should =~ %r{^text/plain\b}i
       result["BODY"].should eq "Hello world"
@@ -77,7 +56,7 @@ describe Pebblebed::Http do
   end
 
   it "encodes gets as url params" do
-    response = Pebblebed::Http.get(pebble_url, {hello: 'world'})
+    response = Pebblebed::Http.get(mock_pebble_url, {hello: 'world'})
     result = JSON.parse(response.body)
     result["QUERY_STRING"].should eq "hello=world"
   end

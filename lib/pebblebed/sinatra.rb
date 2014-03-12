@@ -1,8 +1,9 @@
 # Extends Sinatra for maximum pebble pleasure
-require 'pebblebed'
+require_relative '../pebblebed'
 
 module Sinatra
   module Pebblebed
+
     module Helpers
       # Cache identity for this amount of seconds. TTL will be reset each cache hit,
       # so real TTL might be much longer than this.
