@@ -27,7 +27,6 @@ module Pebblebed
     def connect
       unless connected?
         bunny.start
-        bunny.qos
       end
     end
 
@@ -48,7 +47,7 @@ module Pebblebed
 
       raise ArgumentError.new 'Queue must be named' unless options[:name]
 
-      queue = bunny.queue(options[:name], :durable => true)
+      queue = channel.queue(options[:name], :durable => true)
       Subscription.new(options).queries.each do |key|
         queue.bind(exchange.name, :key => key)
       end
@@ -78,10 +77,15 @@ module Pebblebed
       environment == 'production'
     end
 
+    def channel
+      connect
+      @channel ||= @bunny.create_channel
+    end
+
     def exchange
       connect
 
-      @exchange ||= bunny.exchange(exchange_name, :type => :topic, :durable => :true)
+      @exchange ||= channel.exchange(exchange_name, :type => :topic, :durable => :true)
     end
 
   end
