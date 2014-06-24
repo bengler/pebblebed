@@ -34,6 +34,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "pathbuilder"
   s.add_runtime_dependency "nokogiri"
   s.add_runtime_dependency "activesupport"
-  s.add_runtime_dependency "bunny", "~> 1.2.2"
+  s.add_runtime_dependency "bunny", "~> 1.3.1"
 
 end
