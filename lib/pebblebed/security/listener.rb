@@ -62,8 +62,8 @@ module Pebblebed
           :interval => 1
         }
         queue = river.queue queue_options
-        queue.subscribe(:ack => true) do |message|
-          consider message
+        queue.subscribe(block: true) do |delivery_info, metadata, payload|
+          consider({:payload => payload})
         end
       end
 
