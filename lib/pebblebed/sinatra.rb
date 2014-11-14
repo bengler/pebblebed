@@ -33,7 +33,7 @@ module Sinatra
       alias :checkpoint_session :current_session
 
       def pebbles
-        @pebbles ||= ::Pebblebed::Connector.new(checkpoint_session, :host => request.host)
+        @pebbles ||= ::Pebblebed::Connector.new(checkpoint_session, :host => ::Pebblebed.host || request.host)
       end
 
       def current_identity_data
