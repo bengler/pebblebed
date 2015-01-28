@@ -6,6 +6,8 @@ module Pebblebed
   class River
 
     class << self
+      attr_accessor :rabbitmq_options
+
       def route(options)
         raise ArgumentError.new(':event is required') unless options[:event]
         raise ArgumentError.new(':uid is required') unless options[:uid]
@@ -70,7 +72,7 @@ module Pebblebed
     end
 
     def bunny
-      @bunny ||= Bunny.new
+      @bunny ||= Bunny.new(::Pebblebed::River.rabbitmq_options || {})
     end
 
     def production?
