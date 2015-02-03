@@ -1,5 +1,9 @@
 module Pebblebed
   class Builder
+    def name(value)
+      Pebblebed.name = value
+    end
+
     def host(value)
       Pebblebed.host = value
     end
@@ -36,13 +40,12 @@ module Pebblebed
       Builder.new.send(:instance_eval, &block)
     end
 
-    def host
-      @host
-    end
+    attr_accessor :name
+    attr_accessor :host
+    attr_accessor :base_uri
 
-    def host=(value)
-      @host = value
-    end
+    alias base_url base_uri
+    alias base_url= base_uri=
 
     def memcached
       raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached
@@ -64,16 +67,6 @@ module Pebblebed
     def services
       @services.keys
     end
-
-    def base_uri
-      @base_uri
-    end
-    alias base_url base_uri
-
-    def base_uri=(value)
-      @base_uri = value
-    end
-    alias base_url= base_uri=
 
     def version_of(service)
       return 1 unless @services && @services[service.to_sym]

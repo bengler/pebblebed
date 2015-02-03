@@ -91,6 +91,9 @@ module Pebblebed
       if (id = Tracing.current_id)
         h['Pebblebed-Trace'] = id
       end
+      if (name = ::Pebblebed.name)
+        h['Pebble'] = name
+      end
     end
 
     def self.serialize_params(params)
