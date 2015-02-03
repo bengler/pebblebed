@@ -122,6 +122,9 @@ module Sinatra
     def self.registered(app)
       app.helpers(Sinatra::Pebblebed::Helpers)
       app.use ::Pebblebed::Tracing
+      if ::Pebblebed::Buzz.should_enable?
+        app.use ::Pebblebed::Buzz
+      end
     end
 
     def declare_pebbles(&block)

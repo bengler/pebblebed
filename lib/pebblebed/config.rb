@@ -24,6 +24,10 @@ module Pebblebed
       Pebblebed.base_uri = value
     end
     alias base_url base_uri
+
+    def buzz_endpoints(value)
+      Pebblebed.buzz_endpoints = Array(value)
+    end
   end
 
   def self.require_service(name, options = {})
@@ -43,6 +47,7 @@ module Pebblebed
     attr_accessor :name
     attr_accessor :host
     attr_accessor :base_uri
+    attr_accessor :buzz_endpoints
 
     alias base_url base_uri
     alias base_url= base_uri=
