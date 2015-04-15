@@ -11,9 +11,14 @@ module Pebblebed
     def perform(method, url = '', params = {}, &block)
       begin
         result = Pebblebed::Http.send(method, service_url(url), service_params(params), &block)
-        return DeepStruct.wrap(JSON.parse(result.body))        
-      rescue JSON::ParserError
-        return result.body
+        return DeepStruct.wrap(JSON.parse(result.body))
+      rescue JSON::ParserError => e
+        if e.message =~ /^lexical error: invalid bytes in UTF8 string/
+          raise
+        else
+          # Treat as non-JSON
+          return result.body
+        end
       end
     end
 
