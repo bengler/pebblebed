@@ -28,9 +28,8 @@ module Pebblebed
     end
 
     def self.client_class_for(service)
-      class_name = ActiveSupport::Inflector.classify(service)+'Client'
       begin
-        Pebblebed.const_get(class_name)
+        "::Pebblebed::#{service.to_s.classify}Client".constantize
       rescue NameError
         GenericClient
       end
