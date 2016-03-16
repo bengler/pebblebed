@@ -36,50 +36,53 @@ module Pebblebed
   end
 
   module Http
-    class CurlResult
-      def initialize(curl_result)
-        @curl_result = curl_result
+
+    class Response
+      def initialize(easy)
+        @body = easy.body_str
+        @status = easy.status.to_i
+        @url = easy.url
       end
 
-      def status
-        @curl_result.response_code
-      end
-
-      def url
-        @curl_result.url
-      end
-
-      def body
-        @curl_result.body_str
-      end
+      attr_reader :body, :status, :url
     end
 
     def self.get(url = nil, params = nil, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      handle_curl_response(Curl::Easy.perform(url_with_params(url, params)))
+      return with_curl { |easy|
+        easy.url = url_with_params(url, params)
+        easy.http_get
+      }
     end
 
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
-      handle_curl_response(Curl::Easy.http_post(url.to_s, body) do |curl|
-        curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = content_type
-      end)
+      return with_curl { |easy|
+        easy.url = url.to_s
+        easy.headers['Accept'] = 'application/json'
+        easy.headers['Content-Type'] = content_type
+        easy.http_post(body)
+      }
     end
 
     def self.put(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
-      handle_curl_response(Curl::Easy.http_put(url.to_s, body) do |curl|
-        curl.headers['Accept'] = 'application/json'
-        curl.headers['Content-Type'] = content_type
-      end)
+      return with_curl { |easy|
+        easy.url = url.to_s
+        easy.headers['Accept'] = 'application/json'
+        easy.headers['Content-Type'] = content_type
+        easy.http_put(body)
+      }
     end
 
     def self.delete(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      handle_curl_response(Curl::Easy.http_delete(url_with_params(url, params)))
+      return with_curl { |easy|
+        easy.url = url_with_params(url, params)
+        easy.http_delete
+      }
     end
 
     private
@@ -96,22 +99,25 @@ module Pebblebed
       return content_type, body
     end
 
-    def self.handle_http_errors(result)
-      if result.status == 404
-        errmsg = "Resource not found: '#{result.url}'"
-        errmsg << extract_error_summary(result.body)
+    def self.handle_http_errors(response)
+      if response.status == 404
+        errmsg = "Resource not found: '#{response.url}'"
+        errmsg << extract_error_summary(response.body)
         # ActiveSupport::SafeBuffer.new is the same as errmsg.html_safe in rails
-        raise HttpNotFoundError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status)
-      elsif result.status >= 400
-        errmsg = "Service request to '#{result.url}' failed (#{result.status}):"
-        errmsg << extract_error_summary(result.body)
-        raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), result.status, result)
+        raise HttpNotFoundError.new(ActiveSupport::SafeBuffer.new(errmsg), response.status)
+      elsif response.status >= 400
+        errmsg = "Service request to '#{response.url}' failed (#{response.status}):"
+        errmsg << extract_error_summary(response.body)
+        raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), response.status, response)
       end
-      result
+      response
     end
 
-    def self.handle_curl_response(curl_response)
-      handle_http_errors(CurlResult.new(curl_response))
+    def self.with_curl(&block)
+      easy = Thread.current[:pebblebed_curb_easy] ||= Curl::Easy.new
+      easy.reset
+      yield easy
+      return handle_http_errors(Response.new(easy))
     end
 
     def self.url_with_params(url, params)
