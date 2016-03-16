@@ -40,7 +40,8 @@ module Pebblebed
     class Response
       def initialize(easy)
         @body = easy.body_str
-        @status = easy.status.to_i
+        # We parse it ourselves because Curl::Easy fails when there's no text message
+        @status = easy.header_str.scan(/HTTP\/\d\.\d\s(\d+)\s/).map(&:first).last.to_i
         @url = easy.url
       end
 
