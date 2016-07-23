@@ -49,6 +49,15 @@ describe Pebblebed do
     Pebblebed.root_url_for(:foobar).to_s.should eq "http://example.org/api/foobar/v2/"
   end
 
+  it "allows the host of a pebble to be overridden" do
+    Pebblebed.config do
+      service :checkpoint, host: 'example.net'
+    end
+    Pebblebed.host = "example.org"
+    Pebblebed.root_url_for(:checkpoint).to_s.should eq "http://example.net/api/checkpoint/v1/"
+    Pebblebed.root_url_for(:checkpoint, :host => 'checkpoint.dev').to_s.should eq "http://checkpoint.dev/api/checkpoint/v1/"
+  end
+
   it "works with pebbles that are exposed via https" do
     Pebblebed.config do
       service :checkpoint

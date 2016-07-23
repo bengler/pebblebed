@@ -84,7 +84,8 @@ module Pebblebed
       @services[service.to_sym][:path] || "/api/#{service}"
     end
 
-    def root_url_for(service, url_opts={})
+    def root_url_for(service, url_opts = {})
+      url_opts = {host: (@services[service.to_sym] || {})[:host]}.merge(url_opts)
       URI.join(base_url_for(url_opts), "#{path_of(service)}/v#{version_of(service)}/")
     end
 
