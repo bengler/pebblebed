@@ -1,4 +1,6 @@
 require 'spec_helper'
+require 'pebblebed/config'
+require 'pebblebed/connector'
 require 'pebblebed/clients/abstract_client'
 require 'pebblebed/clients/generic_client'
 
@@ -8,6 +10,14 @@ module Pebblebed
 end
 
 describe Pebblebed::GenericClient do
+
+  Pebblebed.config do
+    host "example.org"
+    memcached "MemcachedClient"
+    session_cookie "my.session"
+    service :checkpoint
+  end
+
   it "always forwards the session key" do
     client = Pebblebed::GenericClient.new("session_key", "http://example.org/")
     expect(client.service_params({})['session']).to eq "session_key"
