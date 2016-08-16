@@ -31,4 +31,32 @@ describe "Pebblebed::Connector" do
     expect(connector.key).to eq("another_key")
   end
 
+  context 'scheme' do
+
+    Pebblebed.config do
+      service :barbaz
+    end
+
+    it 'works for http' do
+      connector_options = {
+        :host => 'example.org',
+        :scheme => 'http'
+      }
+      connector = ::Pebblebed::Connector.new('session_key', connector_options)
+      client = connector['barbaz']
+      expect(client.instance_variable_get(:@root_url).to_s).to eq 'http://example.org/api/barbaz/v1/'
+    end
+
+    it 'works for https' do
+      connector_options = {
+        :host => 'example.org',
+        :scheme => 'https'
+      }
+      connector = ::Pebblebed::Connector.new('session_key', connector_options)
+      client = connector['barbaz']
+      expect(client.instance_variable_get(:@root_url).to_s).to eq 'https://example.org/api/barbaz/v1/'
+    end
+
+  end
+
 end
