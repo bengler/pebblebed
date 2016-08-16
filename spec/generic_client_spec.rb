@@ -1,6 +1,5 @@
 require 'spec_helper'
 require 'pebblebed/config'
-require 'pebblebed/connector'
 require 'pebblebed/clients/abstract_client'
 require 'pebblebed/clients/generic_client'
 
