@@ -9,21 +9,21 @@ describe "Pebblebed::Connector" do
   it "can configure clients for any service" do
     connector = Pebblebed::Connector.new("session_key")
     client = connector['foobar']
-    client.class.name.should eq "Pebblebed::GenericClient"
-    client.instance_variable_get(:@session_key).should eq "session_key"
-    client.instance_variable_get(:@root_url).to_s.should =~ /api\/foobar/
+    expect(client.class.name).to eq "Pebblebed::GenericClient"
+    expect(client.instance_variable_get(:@session_key)).to eq "session_key"
+    expect(client.instance_variable_get(:@root_url).to_s).to match(/api\/foobar/)
   end
 
   it "caches any given client" do
     connector = Pebblebed::Connector.new("session_key")
-    connector['foobar'].should eq connector['foobar']
+    expect(connector['foobar']).to eq connector['foobar']
   end
 
   it "has key getter and setter" do
     connector = Pebblebed::Connector.new("session_key")
-    connector.key.should == "session_key"
+    expect(connector.key).to eq("session_key")
     connector.key = "another_key"
-    connector.key.should == "another_key"
+    expect(connector.key).to eq("another_key")
   end
 
 end

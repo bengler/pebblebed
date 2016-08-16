@@ -21,6 +21,6 @@ describe Pebblebed::Security::Listener do
       }
     }.to_json}
     listener.send(:consider, message)
-    the_attrs[:id].should eq 10
+    expect(the_attrs[:id]).to eq 10
   end
 end

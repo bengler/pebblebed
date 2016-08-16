@@ -11,15 +11,15 @@ describe Pebblebed::Security::AccessData do
   end
 
   it "can calculate a pristine path" do
-    Pebblebed::Security::AccessData.pristine_path("a.b.c|d").should eq "a.b"
-    Pebblebed::Security::AccessData.pristine_path("a.b").should eq "a.b"
+    expect(Pebblebed::Security::AccessData.pristine_path("a.b.c|d")).to eq "a.b"
+    expect(Pebblebed::Security::AccessData.pristine_path("a.b")).to eq "a.b"
   end
 
   it "can calculate relevant paths" do
-    access_data.relevant_subtrees('a.b').sort.should eq ['a.b', 'a.b.c.d.e']
-    access_data.relevant_subtrees('a.b.c').sort.should eq ['a.b', 'a.b.c.d.e']
-    access_data.relevant_subtrees('a.c.e').sort.should eq ['a.c.e.f']
-    access_data.relevant_subtrees('a.*').sort.should eq ['a.b', 'a.b.c.d.e', 'a.c.d', 'a.c.e.f']
+    expect(access_data.relevant_subtrees('a.b').sort).to eq ['a.b', 'a.b.c.d.e']
+    expect(access_data.relevant_subtrees('a.b.c').sort).to eq ['a.b', 'a.b.c.d.e']
+    expect(access_data.relevant_subtrees('a.c.e').sort).to eq ['a.c.e.f']
+    expect(access_data.relevant_subtrees('a.*').sort).to eq ['a.b', 'a.b.c.d.e', 'a.c.d', 'a.c.e.f']
   end
 
   it "can parse a checkpoint record" do
@@ -34,7 +34,7 @@ describe Pebblebed::Security::AccessData do
       ]
     }
     ad = Pebblebed::Security::AccessData.new(record)
-    ad.subtrees.sort.should eq ['a.b.c', 'a.c.d.c']
-    ad.group_ids.sort.should eq [1,2]
+    expect(ad.subtrees.sort).to eq ['a.b.c', 'a.c.d.c']
+    expect(ad.group_ids.sort).to eq [1,2]
   end
 end

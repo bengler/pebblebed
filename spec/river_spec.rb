@@ -8,15 +8,15 @@ describe Pebblebed::River do
 
     specify do
       options = {:event => 'created', :uid => 'post.awesome.event:feeds.bagera.whatevs$123'}
-      Pebblebed::River.route(options).should eq('created._.post.awesome.event._.feeds.bagera.whatevs')
+      expect(Pebblebed::River.route(options)).to eq('created._.post.awesome.event._.feeds.bagera.whatevs')
     end
 
     specify "event is required" do
-      ->{ Pebblebed::River.route(:uid => 'whatevs') }.should raise_error ArgumentError
+      expect{ Pebblebed::River.route(:uid => 'whatevs') }.to raise_error ArgumentError
     end
 
     specify "uid is required" do
-      ->{ Pebblebed::River.route(:event => 'whatevs') }.should raise_error ArgumentError
+      expect{ Pebblebed::River.route(:event => 'whatevs') }.to raise_error ArgumentError
     end
 
   end

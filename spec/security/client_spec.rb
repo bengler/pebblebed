@@ -22,8 +22,8 @@ describe Pebblebed::Security::Client do
   end
 
   it "can fetch access_data" do
-    client.stub(:fetch_membership_data_for).and_return(sample_memberships_record)
+    allow(client).to receive(:fetch_membership_data_for).and_return(sample_memberships_record)
     ad = client.access_data_for(1)
-    ad.subtrees.sort.should eq ['a.b.c', 'a.c.d.c']
+    expect(ad.subtrees.sort).to eq ['a.b.c', 'a.c.d.c']
   end
 end

@@ -70,22 +70,22 @@ describe Sinatra::Pebblebed do
 
     specify "can see public endpoint" do
       get '/public'
-      last_response.body.should == 'You are a guest here'
+      expect(last_response.body).to eq('You are a guest here')
     end
 
     it "can assign a provisional identity" do
       get '/public', :provisional => 'yes'
-      last_response.status.should == 302
+      expect(last_response.status).to eq(302)
     end
 
     specify "cannot see private endpoints" do
       get '/private'
-      last_response.status.should == 403
+      expect(last_response.status).to eq(403)
     end
 
     it "cannot see root endpoints" do
       get '/root'
-      last_response.status.should == 403
+      expect(last_response.status).to eq(403)
     end
   end
 
@@ -94,17 +94,17 @@ describe Sinatra::Pebblebed do
 
     specify "can see public endpoint" do
       get '/public'
-      last_response.body.should == 'You are a guest here'
+      expect(last_response.body).to eq('You are a guest here')
     end
 
     specify "can see private endpoints" do
       get '/private'
-      last_response.body.should == 'You are logged in'
+      expect(last_response.body).to eq('You are logged in')
     end
 
     it "cannot see root endpoints" do
       get '/root'
-      last_response.status.should == 403
+      expect(last_response.status).to eq(403)
     end
   end
 
@@ -113,17 +113,17 @@ describe Sinatra::Pebblebed do
 
     specify "can see public endpoint" do
       get '/public'
-      last_response.body.should == 'You are a guest here'
+      expect(last_response.body).to eq('You are a guest here')
     end
 
     specify "can see private endpoints" do
       get '/private'
-      last_response.body.should == 'You are logged in'
+      expect(last_response.body).to eq('You are logged in')
     end
 
     it "cannot see root endpoints" do
       get '/root'
-      last_response.body.should == 'You are most powerful'
+      expect(last_response.body).to eq('You are most powerful')
     end
   end
 
@@ -136,34 +136,34 @@ describe Sinatra::Pebblebed do
       specify "not allowed" do
         guest!
         get '/group'
-        last_response.status.should == 403
+        expect(last_response.status).to eq(403)
       end
     end
     context "as a god" do
       specify "allowed without policy check" do
         god!(:session => random_session)
         get '/group'
-        last_response.body.should == "You are granted access to this content"
+        expect(last_response.body).to eq("You are granted access to this content")
       end
     end
     context "as user without grants" do
       specify "is disallowed" do
         user!
-        checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-        checkpoint.should_receive(:get).with("/identities/1/access_to/testrealm.specialgroup.123").and_return(DeepStruct.wrap(:access => {:granted => false}))
+        expect(checkpoint).to receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+        expect(checkpoint).to receive(:get).with("/identities/1/access_to/testrealm.specialgroup.123").and_return(DeepStruct.wrap(:access => {:granted => false}))
         Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
         get '/group'
-        last_response.status.should == 403
+        expect(last_response.status).to eq(403)
       end
     end
     context "as user with grants" do
       specify "is allowed" do
         user!
-        checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-        checkpoint.should_receive(:get).with("/identities/1/access_to/testrealm.specialgroup.123").and_return(DeepStruct.wrap(:access => {:granted => true}))
+        expect(checkpoint).to receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+        expect(checkpoint).to receive(:get).with("/identities/1/access_to/testrealm.specialgroup.123").and_return(DeepStruct.wrap(:access => {:granted => true}))
         Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
         get '/group'
-        last_response.body.should == "You are granted access to this content"
+        expect(last_response.body).to eq("You are granted access to this content")
       end
     end
   end
@@ -177,64 +177,64 @@ describe Sinatra::Pebblebed do
       specify "not allowed" do
         guest!
         post '/create/post.foo:testrealm'
-        last_response.status.should == 403
+        expect(last_response.status).to eq(403)
       end
     end
     context "as a god" do
       specify "allowed without callbacks" do
         god!(:session => random_session)
         post '/create/post.foo:testrealm'
-        last_response.body.should == "You are creative"
+        expect(last_response.body).to eq("You are creative")
       end
     end
     context "as user without permissions" do
       specify "is disallowed" do
         user!
-        checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-        checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => false, :reason => "You are not worthy!"))
+        expect(checkpoint).to receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+        expect(checkpoint).to receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => false, :reason => "You are not worthy!"))
         Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
         post '/create/post.foo:testrealm'
-        last_response.status.should == 403
-        last_response.body.should == ":create denied for post.foo:testrealm : You are not worthy!"
+        expect(last_response.status).to eq(403)
+        expect(last_response.body).to eq(":create denied for post.foo:testrealm : You are not worthy!")
       end
     end
     context "as user with permissions" do
       specify "is allowed" do
         user!
-        checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-        checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => true))
+        expect(checkpoint).to receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+        expect(checkpoint).to receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => true))
         Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
         post '/create/post.foo:testrealm'
-        last_response.body.should == "You are creative"
+        expect(last_response.body).to eq("You are creative")
       end
       context "with options[:default] => false" do
         specify "is disallowed" do
           user!
-          checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-          checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
+          expect(checkpoint).to receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+          expect(checkpoint).to receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
           Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
           post '/create2/post.foo:testrealm'
-          last_response.status.should == 403
+          expect(last_response.status).to eq(403)
         end
       end
       context "with no options given and allowed = default" do
         specify "is disallowed" do
           user!
-          checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-          checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
+          expect(checkpoint).to receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+          expect(checkpoint).to receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
           Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
           post '/create/post.foo:testrealm'
-          last_response.status.should == 403
+          expect(last_response.status).to eq(403)
         end
       end
       context "with options[:default] => true" do
         specify "is allowed" do
           user!
-          checkpoint.should_receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
-          checkpoint.should_receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
+          expect(checkpoint).to receive(:get).with("/identities/me").and_return(DeepStruct.wrap(:identity => {:realm => 'testrealm', :id => 1, :god => false}))
+          expect(checkpoint).to receive(:post).with("/callbacks/allowed/create/post.foo:testrealm").and_return(DeepStruct.wrap(:allowed => "default"))
           Pebblebed::Connector.any_instance.stub(:checkpoint => checkpoint)
           post '/create3/post.foo:testrealm'
-          last_response.body.should == "You are creative"
+          expect(last_response.body).to eq("You are creative")
         end
       end
     end
@@ -247,14 +247,14 @@ describe Sinatra::Pebblebed do
       let(:checkpoint) { Pebblebed::Connector.new.checkpoint }
 
       it "is not turned on by default" do
-        checkpoint.should_receive(:get).twice
+        expect(checkpoint).to receive(:get).twice
         get '/private'
         get '/private'
       end
 
       it "can be turned on" do
         app.set :cache_current_identity, true
-        checkpoint.should_receive(:get).once
+        expect(checkpoint).to receive(:get).once
         get '/private'
         get '/private'
       end
@@ -264,7 +264,7 @@ describe Sinatra::Pebblebed do
 
         it "is disabled" do
           app.set :cache_current_identity, true
-          checkpoint.should_receive(:get).twice
+          expect(checkpoint).to receive(:get).twice
           get '/private'
           get '/private'
         end
