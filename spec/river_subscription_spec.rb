@@ -1,7 +1,12 @@
 require 'spec_helper'
+require 'pebblebed/config'
 require 'pebblebed/river/subscription'
 
 describe Pebblebed::River::Subscription do
+
+  Pebblebed.config do
+    memcached 'MemcachedClient'
+  end
 
   Subscription = Pebblebed::River::Subscription
 
