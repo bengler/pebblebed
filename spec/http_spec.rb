@@ -3,9 +3,14 @@
 require 'spec_helper'
 require 'yajl/json_gem'
 require 'pebblebed/http'
+require 'pebblebed/config'
 require 'deepstruct'
 
 describe Pebblebed::Http do
+
+  Pebblebed.config do
+    memcached "MemcachedClient"
+  end
 
   def mock_pebble
     @mp ||= MockPebble.new
