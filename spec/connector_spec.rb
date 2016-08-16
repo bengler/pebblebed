@@ -6,6 +6,11 @@ require 'pebblebed/clients/generic_client'
 require 'pebblebed/clients/quorum_client'
 
 describe "Pebblebed::Connector" do
+
+  Pebblebed.config do
+    service :foobar
+  end
+
   it "can configure clients for any service" do
     connector = Pebblebed::Connector.new("session_key")
     client = connector['foobar']
