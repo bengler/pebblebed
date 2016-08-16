@@ -12,10 +12,7 @@ end
 describe Pebblebed::GenericClient do
 
   Pebblebed.config do
-    host "example.org"
     memcached "MemcachedClient"
-    session_cookie "my.session"
-    service :checkpoint
   end
 
   it "always forwards the session key" do
