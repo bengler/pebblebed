@@ -94,8 +94,9 @@ module Pebblebed
       [:base_uri, :base_url].each do |key|
         return url_opts[key] if url_opts[key]
       end
-      return "http://#{url_opts[:host]}" if url_opts[:host]
-      base_uri || "http://#{host}"
+      scheme = url_opts[:scheme] || 'http'
+      return "#{scheme}://#{url_opts[:host]}" if url_opts[:host]
+      base_uri || "#{scheme}://#{host}"
     end
   end
 end
