@@ -33,7 +33,7 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "futurevalue"
   s.add_runtime_dependency "pathbuilder"
   s.add_runtime_dependency "nokogiri"
-  s.add_runtime_dependency "activesupport"
+  s.add_runtime_dependency 'activesupport', '~> 4.2.7'
   s.add_runtime_dependency 'bunny'
 
 end
