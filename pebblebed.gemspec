@@ -27,13 +27,13 @@ Gem::Specification.new do |s|
   s.add_development_dependency "memcache_mock"
 
   s.add_runtime_dependency "deepstruct", ">= 0.0.4"
-  s.add_runtime_dependency "curb", ">= 0.8.4"
+  s.add_runtime_dependency "curb", "~> 0.8.8"
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "queryparams"
   s.add_runtime_dependency "futurevalue"
   s.add_runtime_dependency "pathbuilder"
   s.add_runtime_dependency "nokogiri"
-  s.add_runtime_dependency 'activesupport', '~> 4.2.7'
-  s.add_runtime_dependency 'bunny'
+  s.add_runtime_dependency 'activesupport', '~> 4.0.13'
+  s.add_runtime_dependency 'bunny', '~> 1.7.1'
 
 end
