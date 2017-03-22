@@ -125,6 +125,14 @@ module Sinatra
 
     def self.registered(app)
       app.helpers(Sinatra::Pebblebed::Helpers)
+      app.before do
+        @_start_time = AbsoluteTime.now
+      end
+      app.after do
+        if (start_time = @_start_time)
+          headers 'X-Timing' => ((AbsoluteTime.now - start_time) * 1000).to_i.to_s
+        end
+      end
     end
 
     def declare_pebbles(&block)

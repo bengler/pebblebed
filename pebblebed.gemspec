@@ -35,5 +35,6 @@ Gem::Specification.new do |s|
   s.add_runtime_dependency "nokogiri"
   s.add_runtime_dependency 'activesupport', '~> 4.0.13'
   s.add_runtime_dependency 'bunny', '~> 1.7.1'
+  s.add_runtime_dependency 'absolute_time'
 
 end
