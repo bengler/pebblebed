@@ -47,16 +47,19 @@ module Sinatra
         return @current_identity_data if @current_identity_data_fetched
         @current_identity_data_fetched = true
         if cache_current_identity?
+          memcached = ::Pebblebed.memcached
           cache_key = "identity-data-for-session-#{current_session}"
-          @current_identity_data = ::Pebblebed.memcached.get(cache_key)
+          @current_identity_data = memcached.get(cache_key)
           if @current_identity_data
-            # Reinstate this line when memcached version >= 1.4.8
-            # ::Pebblebed.memcached.touch(cache_key, IDENTITY_CACHE_TTL)
+            if memcached.respond_to?(:touch)
+              memcached.touch(cache_key, IDENTITY_CACHE_TTL)
+            end
             return @current_identity_data
           end
           @current_identity_data = pebbles.checkpoint.get("/identities/me")
-          # Cache identity only if there is an identity in the data returned from checkpoint
-          ::Pebblebed.memcached.set(cache_key, @current_identity_data, IDENTITY_CACHE_TTL) if @current_identity_data['identity']
+          if @current_identity_data['identity']
+            memcached.set(cache_key, @current_identity_data, IDENTITY_CACHE_TTL)
+          end
         else
           @current_identity_data = pebbles.checkpoint.get("/identities/me")
         end
