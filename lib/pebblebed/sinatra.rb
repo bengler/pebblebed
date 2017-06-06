@@ -1,6 +1,7 @@
-# Extends Sinatra for maximum pebble pleasure
+require 'absolute_time'
 require 'pebblebed'
 
+# Extends Sinatra for maximum pebble pleasure
 module Sinatra
   module Pebblebed
     module Helpers
