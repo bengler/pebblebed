@@ -36,7 +36,7 @@ module Sinatra
       def pebbles
         return @pebbles if @pebbles
         connector_options = {
-          :host => ::Pebblebed.host || request.host,
+          :host => ::Pebblebed.host || request.host || ::Pebblebed.default_host,
           :scheme => request.scheme
         }
         @pebbles = ::Pebblebed::Connector.new(checkpoint_session, connector_options)

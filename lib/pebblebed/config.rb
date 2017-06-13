@@ -4,6 +4,10 @@ module Pebblebed
       Pebblebed.host = value
     end
 
+    def default_host(value)
+      Pebblebed.default_host = value
+    end
+
     def memcached(value)
       Pebblebed.memcached = value
     end
@@ -36,13 +40,7 @@ module Pebblebed
       Builder.new.send(:instance_eval, &block)
     end
 
-    def host
-      @host
-    end
-
-    def host=(value)
-      @host = value
-    end
+    attr_accessor :host, :default_host
 
     def memcached
       raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached
