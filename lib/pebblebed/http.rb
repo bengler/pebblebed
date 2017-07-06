@@ -111,6 +111,10 @@ module Pebblebed
         easy.url = url.to_s
         easy.headers['Accept'] = 'application/json'
         easy.headers['Content-Type'] = content_type
+        easy.on_body do |data|
+          on_data.call(data)
+          data.length
+        end
         easy.http_post(body)
       }
     end
@@ -125,6 +129,10 @@ module Pebblebed
         easy.url = url.to_s
         easy.headers['Accept'] = 'application/json'
         easy.headers['Content-Type'] = content_type
+        easy.on_body do |data|
+          on_data.call(data)
+          data.length
+        end
         easy.http_put(body)
       }
     end
