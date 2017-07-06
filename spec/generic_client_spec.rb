@@ -49,4 +49,27 @@ describe Pebblebed::GenericClient do
     expect(result).to eq "Ok"
   end
 
+  describe 'streaming' do
+    context 'GET' do
+      it "streams response body" do
+        curl_result = DeepStruct.wrap({status: 200, body: nil})
+        allow(Pebblebed::Http).to receive(:stream_get).with(
+          URI.parse("http://example.org/"),
+          {"session" => "session_key"},
+          anything) { |_, _, options|
+          options[:on_data].call("hello")
+        }.and_return(curl_result)
+
+        buf = ""
+        client = Pebblebed::GenericClient.new("session_key", "http://example.org/")
+        result = client.stream(:get, '/', {}, on_data: ->(data) {
+          buf << data
+        })
+        expect(buf).to eq "hello"
+        expect(result.status).to eq 200
+        expect(result.body).to eq nil
+      end
+    end
+  end
+
 end

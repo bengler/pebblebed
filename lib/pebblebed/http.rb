@@ -50,7 +50,7 @@ module Pebblebed
 
     def self.get(url = nil, params = nil, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      return with_curl { |easy|
+      return do_easy { |easy|
         easy.url = url_with_params(url, params)
         easy.http_get
       }
@@ -59,7 +59,7 @@ module Pebblebed
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
-      return with_curl { |easy|
+      return do_easy { |easy|
         easy.url = url.to_s
         easy.headers['Accept'] = 'application/json'
         easy.headers['Content-Type'] = content_type
@@ -70,7 +70,7 @@ module Pebblebed
     def self.put(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
-      return with_curl { |easy|
+      return do_easy { |easy|
         easy.url = url.to_s
         easy.headers['Accept'] = 'application/json'
         easy.headers['Content-Type'] = content_type
@@ -80,9 +80,52 @@ module Pebblebed
 
     def self.delete(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      return with_curl { |easy|
+      return do_easy { |easy|
         easy.url = url_with_params(url, params)
         easy.http_delete
+      }
+    end
+
+    def self.stream_get(url = nil, params = nil, options = {})
+      return do_easy { |easy|
+        on_data = options[:on_data] or raise "Option :on_data must be specified"
+
+        url, params = url_and_params_from_args(url, params)
+
+        easy.url = url_with_params(url, params)
+        easy.on_body do |data|
+          on_data.call(data)
+          data.length
+        end
+        easy.http_get
+      }
+    end
+
+    def self.stream_post(url, params, options = {})
+      return do_easy { |easy|
+        on_data = options[:on_data] or raise "Option :on_data must be specified"
+
+        url, params = url_and_params_from_args(url, params)
+        content_type, body = serialize_params(params)
+
+        easy.url = url.to_s
+        easy.headers['Accept'] = 'application/json'
+        easy.headers['Content-Type'] = content_type
+        easy.http_post(body)
+      }
+    end
+
+    def self.stream_put(url, params, options = {})
+      return do_easy { |easy|
+        on_data = options[:on_data] or raise "Option :on_data must be specified"
+
+        url, params = url_and_params_from_args(url, params)
+        content_type, body = serialize_params(params)
+
+        easy.url = url.to_s
+        easy.headers['Accept'] = 'application/json'
+        easy.headers['Content-Type'] = content_type
+        easy.http_put(body)
       }
     end
 
@@ -114,11 +157,17 @@ module Pebblebed
       response
     end
 
-    def self.with_curl(&block)
+    def self.do_easy(&block)
+      with_easy do |easy|
+        yield easy
+        return handle_http_errors(Response.new(easy))
+      end
+    end
+
+    def self.with_easy(&block)
       easy = Thread.current[:pebblebed_curb_easy] ||= Curl::Easy.new
       easy.reset
       yield easy
-      return handle_http_errors(Response.new(easy))
     end
 
     def self.url_with_params(url, params)

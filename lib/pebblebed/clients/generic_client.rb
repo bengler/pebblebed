@@ -3,7 +3,7 @@ require 'deepstruct'
 module Pebblebed
   class GenericClient < AbstractClient
     def initialize(session_key, root_url)
-      @root_url = root_url  
+      @root_url = root_url
       @root_url = URI(@root_url) unless @root_url.is_a?(URI::HTTP)
       @session_key = session_key
     end
@@ -20,6 +20,14 @@ module Pebblebed
           return result.body
         end
       end
+    end
+
+    def stream(method, url = '', params = {}, options = {})
+      on_data = options[:on_data] or raise "Option :on_data must be specified"
+      method_name = "stream_#{method.to_s.downcase}"
+      raise "Method not supported for streaming" unless Pebblebed::Http.respond_to?(method_name)
+      return Pebblebed::Http.send(method_name, service_url(url), service_params(params),
+        on_data: on_data)
     end
 
     def service_url(url, params = nil)

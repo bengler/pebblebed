@@ -87,4 +87,19 @@ describe Pebblebed::Http do
     expect(result["QUERY_STRING"]).to eq "hello=world"
   end
 
+  describe 'streaming' do
+    context 'GET' do
+      it "streams response body" do
+        buf = ""
+        response = Pebblebed::Http.stream_get(pebble_url, {hello: 'world'},
+          on_data: ->(data) {
+            buf << data
+          })
+        result = JSON.parse(buf)
+        expect(result["QUERY_STRING"]).to eq "hello=world"
+        expect(response.body).to eq nil
+      end
+    end
+  end
+
 end
