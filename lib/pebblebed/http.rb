@@ -154,12 +154,12 @@ module Pebblebed
     def self.handle_http_errors(response)
       if response.status == 404
         errmsg = "Resource not found: '#{response.url}'"
-        errmsg << extract_error_summary(response.body)
+        errmsg << extract_error_summary(response.body) if response.body
         # ActiveSupport::SafeBuffer.new is the same as errmsg.html_safe in rails
         raise HttpNotFoundError.new(ActiveSupport::SafeBuffer.new(errmsg), response.status)
       elsif response.status >= 400
         errmsg = "Service request to '#{response.url}' failed (#{response.status}):"
-        errmsg << extract_error_summary(response.body)
+        errmsg << extract_error_summary(response.body) if response.body
         raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), response.status, response)
       end
       response
