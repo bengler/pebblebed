@@ -51,11 +51,14 @@ module Sinatra
           cache_key = "identity-data-for-session-#{current_session}"
           @current_identity_data = memcached.get(cache_key)
           if @current_identity_data
+            logger.info "Using cached identity"
             if memcached.respond_to?(:touch)
               memcached.touch(cache_key, IDENTITY_CACHE_TTL)
             end
             return @current_identity_data
           end
+
+          logger.info "Retrieving identity for caching"
           @current_identity_data = pebbles.checkpoint.get("/identities/me")
           if @current_identity_data['identity']
             memcached.set(cache_key, @current_identity_data, IDENTITY_CACHE_TTL)
@@ -80,6 +83,7 @@ module Sinatra
 
       def require_identity
         unless current_identity
+          logger.warn "Current session (#{current_session}) has no identity"
           halt 403, "No current identity."
         end
       end
