@@ -123,8 +123,8 @@ module Sinatra
       def limit_offset_collection(collection, options)
         limit = (options[:limit] || 20).to_i
         offset = (options[:offset] || 0).to_i
-        collection = collection.limit(limit+1).offset(offset)
-        last_page = (collection.size <= limit)
+        collection = collection.limit(limit+1).offset(offset).to_a
+        last_page = (collection.length <= limit)
         metadata = {:limit => limit, :offset => offset, :last_page => last_page}
         collection = collection[0..limit-1]
         [collection, metadata]
