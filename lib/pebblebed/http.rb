@@ -174,7 +174,14 @@ module Pebblebed
 
     def self.with_easy(&block)
       easy = Thread.current[:pebblebed_curb_easy] ||= Curl::Easy.new
-      easy.reset
+      begin
+        easy.reset
+      rescue RuntimeError => e
+        # This can happen if previous streaming isn't finished
+        raise unless e.to_s =~ /^Cannot close an active curl handle within a callback/
+        easy.close rescue nil
+        easy = Thread.current[:pebblebed_curb_easy] = Curl::Easy.new
+      end
       yield easy
     end
 
