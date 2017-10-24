@@ -150,7 +150,7 @@ describe Pebblebed::GenericClient do
           URI.parse("http://example.org/"),
           {"session" => "session_key"},
           anything) { |_, _, options|
-          options[:on_data].call(%{"a"\n\n})
+          options[:on_data].call(%{{"a":42}\n\n})
         }.and_return(curl_result)
 
         payloads = []
@@ -160,7 +160,7 @@ describe Pebblebed::GenericClient do
           on_data: ->(payload) {
             payloads << payload
           })
-        expect(payloads).to eq ['a']
+        expect(payloads).to eq [{'a' => 42}]
         expect(response.status).to eq 201
         expect(response.body).to eq "halp"
       end
