@@ -1,4 +1,5 @@
 require 'deepstruct'
+require_relative '../ndjson'
 
 module Pebblebed
   class GenericClient < AbstractClient
@@ -22,10 +23,20 @@ module Pebblebed
       end
     end
 
-    def stream(method, url = '', params = {}, options = {})
-      on_data = options[:on_data] or raise "Option :on_data must be specified"
+    def stream(method, url = '', params = {}, on_data:, accept: nil)
       method_name = "stream_#{method.to_s.downcase}"
       raise "Method not supported for streaming" unless Pebblebed::Http.respond_to?(method_name)
+
+      if accept == 'application/x-ndjson'
+        buffer = NdjsonBuffer.new(on_data)
+        response = Pebblebed::Http.send(method_name, service_url(url), service_params(params),
+          on_data: ->(data) {
+            buffer << data
+          })
+        buffer.check_end!
+        return response
+      end
+
       return Pebblebed::Http.send(method_name, service_url(url), service_params(params),
         on_data: on_data)
     end
