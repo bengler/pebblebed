@@ -21,6 +21,10 @@ describe Pebblebed::Http do
   end
 
   before :all do
+    Pebblebed::Http.connect_timeout = nil
+    Pebblebed::Http.request_timeout = nil
+    Pebblebed::Http.read_timeout = nil
+
     # Starts the mock pebble at localhost:8666/api/mock/v1
     mock_pebble.start
   end
@@ -100,6 +104,27 @@ describe Pebblebed::Http do
         expect(response.body).to eq nil
       end
     end
+  end
+
+  it "enforces request timeout" do
+    Pebblebed::Http.request_timeout = 1
+    expect {
+      Pebblebed::Http.get(pebble_url, {slow: '2'})
+    }.to raise_error(Curl::Err::TimeoutError)
+    expect {
+      Pebblebed::Http.get(pebble_url, {slow: '0.5'})
+    }.not_to raise_error
+  end
+
+  it "enforces read timeout" do
+    Pebblebed::Http.request_timeout = 1000
+    Pebblebed::Http.read_timeout = 1
+    expect {
+      Pebblebed::Http.get(pebble_url, {slow: '30'})
+    }.to raise_error(Curl::Err::TimeoutError)
+    expect {
+      Pebblebed::Http.get(pebble_url, {slow: '0.5'})
+    }.not_to raise_error
   end
 
 end

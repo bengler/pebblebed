@@ -9,6 +9,7 @@ require 'pathbuilder'
 require 'active_support'
 
 module Pebblebed
+
   class HttpError < StandardError
     attr_reader :status, :message, :response
 
@@ -31,11 +32,17 @@ module Pebblebed
     end
   end
 
-  class HttpNotFoundError < HttpError
-
-  end
+  class HttpNotFoundError < HttpError; end
 
   module Http
+
+    DEFAULT_CONNECT_TIMEOUT = 30
+    DEFAULT_REQUEST_TIMEOUT = nil
+    DEFAULT_READ_TIMEOUT = 30
+
+    class << self
+      attr_accessor :connect_timeout, :request_timeout, :read_timeout
+    end
 
     class Response
       def initialize(easy)
@@ -173,16 +180,16 @@ module Pebblebed
     end
 
     def self.with_easy(&block)
-      easy = Thread.current[:pebblebed_curb_easy] ||= Curl::Easy.new
-      begin
-        easy.reset
-      rescue RuntimeError => e
-        # This can happen if previous streaming isn't finished
-        raise unless e.to_s =~ /^Cannot close an active curl handle within a callback/
-        easy.close rescue nil
-        easy = Thread.current[:pebblebed_curb_easy] = Curl::Easy.new
-      end
-      yield easy
+      yield new_easy
+    end
+
+    def self.new_easy
+      easy = Curl::Easy.new
+      easy.connect_timeout = connect_timeout || DEFAULT_CONNECT_TIMEOUT
+      easy.timeout = request_timeout || DEFAULT_REQUEST_TIMEOUT
+      easy.low_speed_time = read_timeout || DEFAULT_READ_TIMEOUT
+      easy.low_speed_limit = 1
+      easy
     end
 
     def self.url_with_params(url, params)

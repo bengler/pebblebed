@@ -41,6 +41,10 @@ class MockPebble
     end
 
     def do_stuff_with(request)
+      if request.request_uri.to_s =~ /slow=(\d+)/
+        delay = $1.to_i
+        sleep(delay)
+      end
       return 200, "application/json", request.meta_vars.merge("BODY" => request.body).to_json
     end
   end
