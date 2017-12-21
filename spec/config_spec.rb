@@ -6,12 +6,14 @@ describe Pebblebed do
   it "has a nice dsl that configures stuff" do
     Pebblebed.config do
       host "example.org"
+      scheme "https"
       memcached "MemcachedClient"
       session_cookie "my.session"
       service :checkpoint
     end
 
     expect(Pebblebed.host).to eq "example.org"
+    expect(Pebblebed.scheme).to eq "https"
     expect(Pebblebed.memcached).to eq "MemcachedClient"
     expect(Pebblebed.session_cookie).to eq "my.session"
     expect(Pebblebed::Connector.instance_methods).to include :checkpoint
@@ -29,6 +31,7 @@ describe Pebblebed do
 
   it "can calculate the root uri of any pebble" do
     Pebblebed.config do
+      scheme 'http'
       service :checkpoint
       service :foobar, :version => 2
     end
