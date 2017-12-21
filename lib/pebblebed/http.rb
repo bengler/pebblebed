@@ -52,6 +52,7 @@ module Pebblebed
       url, params = url_and_params_from_args(url, params, &block)
       return with_curl { |easy|
         easy.url = url_with_params(url, params)
+        easy.follow_location = true
         easy.http_get
       }
     end
@@ -61,6 +62,7 @@ module Pebblebed
       content_type, body = serialize_params(params)
       return with_curl { |easy|
         easy.url = url.to_s
+        easy.follow_location = true
         easy.headers['Accept'] = 'application/json'
         easy.headers['Content-Type'] = content_type
         easy.http_post(body)
@@ -72,6 +74,7 @@ module Pebblebed
       content_type, body = serialize_params(params)
       return with_curl { |easy|
         easy.url = url.to_s
+        easy.follow_location = true
         easy.headers['Accept'] = 'application/json'
         easy.headers['Content-Type'] = content_type
         easy.http_put(body)
@@ -81,6 +84,7 @@ module Pebblebed
     def self.delete(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       return with_curl { |easy|
+        easy.follow_location = true
         easy.url = url_with_params(url, params)
         easy.http_delete
       }
