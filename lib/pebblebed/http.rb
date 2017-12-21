@@ -189,6 +189,7 @@ module Pebblebed
       easy.timeout = request_timeout || DEFAULT_REQUEST_TIMEOUT
       easy.low_speed_time = read_timeout || DEFAULT_READ_TIMEOUT
       easy.low_speed_limit = 1
+      easy.follow_location = true
       easy
     end
 
