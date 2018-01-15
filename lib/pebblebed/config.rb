@@ -4,6 +4,10 @@ module Pebblebed
       Pebblebed.host = value
     end
 
+    def scheme(value)
+      Pebblebed.scheme = value
+    end
+
     def default_host(value)
       Pebblebed.default_host = value
     end
@@ -40,7 +44,7 @@ module Pebblebed
       Builder.new.send(:instance_eval, &block)
     end
 
-    attr_accessor :host, :default_host
+    attr_accessor :host, :default_host, :scheme
 
     def memcached
       raise RuntimeError, "Please set Pebblebed.memcached = <your memcached client>" unless @memcached
@@ -92,7 +96,7 @@ module Pebblebed
       [:base_uri, :base_url].each do |key|
         return url_opts[key] if url_opts[key]
       end
-      scheme = url_opts[:scheme] || 'http'
+      scheme = url_opts[:scheme] || ::Pebblebed.scheme || 'http'
       return "#{scheme}://#{url_opts[:host]}" if url_opts[:host]
       base_uri || "#{scheme}://#{host}"
     end
