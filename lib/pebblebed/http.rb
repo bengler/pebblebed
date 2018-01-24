@@ -185,7 +185,8 @@ module Pebblebed
     end
 
     def self.new_easy
-      easy = Curl::Easy.new
+      easy = Thread.current[:pebblebed_curb_easy] ||= Curl::Easy.new
+      easy.reset
       easy.connect_timeout = connect_timeout || DEFAULT_CONNECT_TIMEOUT
       easy.timeout = request_timeout || DEFAULT_REQUEST_TIMEOUT
       easy.low_speed_time = read_timeout || DEFAULT_READ_TIMEOUT
