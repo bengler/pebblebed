@@ -45,11 +45,11 @@ module Pebblebed
     end
 
     class Response
-      def initialize(easy)
-        @body = easy.body_str
+      def initialize(url, header, body)
+        @body = body
         # We parse it ourselves because Curl::Easy fails when there's no text message
-        @status = easy.header_str.scan(/HTTP\/\d\.\d\s(\d+)\s/).map(&:first).last.to_i
-        @url = easy.url
+        @status = header.scan(/HTTP\/\d\.\d\s(\d+)\s/).map(&:first).last.to_i
+        @url = url
       end
 
       attr_reader :body, :status, :url
@@ -175,7 +175,8 @@ module Pebblebed
     def self.do_easy(&block)
       with_easy do |easy|
         yield easy
-        return handle_http_errors(Response.new(easy))
+        response = Response.new(easy.url, easy.header_str, easy.body_str)
+        return handle_http_errors(response)
       end
     end
 
