@@ -41,7 +41,19 @@ module Pebblebed
     DEFAULT_READ_TIMEOUT = 30
 
     class << self
-      attr_accessor :connect_timeout, :request_timeout, :read_timeout
+      attr_reader :connect_timeout, :request_timeout, :read_timeout
+      def connect_timeout=(value)
+        @connect_timeout = value
+        self.current_easy = nil
+      end
+      def request_timeout=(value)
+        @request_timeout = value
+        self.current_easy = nil
+      end
+      def read_timeout=(value)
+        @read_timeout = value
+        self.current_easy = nil
+      end
     end
 
     class Response
@@ -94,7 +106,7 @@ module Pebblebed
     end
 
     def self.stream_get(url = nil, params = nil, options = {})
-      return do_easy { |easy|
+      return do_easy(cache: false) { |easy|
         on_data = options[:on_data] or raise "Option :on_data must be specified"
 
         url, params = url_and_params_from_args(url, params)
@@ -109,7 +121,7 @@ module Pebblebed
     end
 
     def self.stream_post(url, params, options = {})
-      return do_easy { |easy|
+      return do_easy(cache: false) { |easy|
         on_data = options[:on_data] or raise "Option :on_data must be specified"
 
         url, params = url_and_params_from_args(url, params)
@@ -127,7 +139,7 @@ module Pebblebed
     end
 
     def self.stream_put(url, params, options = {})
-      return do_easy { |easy|
+      return do_easy(cache: false) { |easy|
         on_data = options[:on_data] or raise "Option :on_data must be specified"
 
         url, params = url_and_params_from_args(url, params)
@@ -161,29 +173,54 @@ module Pebblebed
     def self.handle_http_errors(response)
       if response.status == 404
         errmsg = "Resource not found: '#{response.url}'"
-        errmsg << extract_error_summary(response.body) if response.body
+        if (summary = extract_error_summary(response.body))
+          errmsg << ": #{summary}"
+        end
         # ActiveSupport::SafeBuffer.new is the same as errmsg.html_safe in rails
         raise HttpNotFoundError.new(ActiveSupport::SafeBuffer.new(errmsg), response.status)
-      elsif response.status >= 400
-        errmsg = "Service request to '#{response.url}' failed (#{response.status}):"
-        errmsg << extract_error_summary(response.body) if response.body
+      end
+
+      if response.status >= 400
+        errmsg = "Service request to '#{response.url}' failed (#{response.status})"
+        if (summary = extract_error_summary(response.body))
+          errmsg << ": #{summary}"
+        end
         raise HttpError.new(ActiveSupport::SafeBuffer.new(errmsg), response.status, response)
       end
+
       response
     end
 
-    def self.do_easy(&block)
-      with_easy do |easy|
+    def self.do_easy(cache: true, &block)
+      with_easy(cache: cache) do |easy|
         yield easy
         response = Response.new(easy.url, easy.header_str, easy.body_str)
         return handle_http_errors(response)
       end
     end
 
-    def self.with_easy(&block)
-      yield new_easy
+    def self.with_easy(cache: true, &block)
+      if cache
+        easy = self.current_easy ||= new_easy
+      else
+        easy = new_easy
+      end
+      yield easy
     end
 
+    def self.current_easy
+      Thread.current[:pebblebed_curb_easy]
+    end
+
+    def self.current_easy=(value)
+      if (current = Thread.current[:pebblebed_curb_easy])
+        # Reset old instance
+        current.reset
+      end
+      Thread.current[:pebblebed_curb_easy] = value
+    end
+
+    # Returns new Easy instance from current configuration.
     def self.new_easy
       easy = Curl::Easy.new
       easy.connect_timeout = connect_timeout || DEFAULT_CONNECT_TIMEOUT
@@ -211,11 +248,15 @@ module Pebblebed
     end
 
     def self.extract_error_summary(body)
-      # Supports Sinatra error pages
-      extract = Nokogiri::HTML(body).css('#summary').text.gsub(/\s+/, ' ').strip
-      # TODO: Rails?
-      return body if extract == ''
-      extract
+      return nil unless body
+
+      # Hack to support Sinatra error pages
+      summary = Nokogiri::HTML(body).css('#summary').text.gsub(/\s+/, ' ').strip
+      return summary if summary.length > 0
+
+      summary = body
+      summary = summary[0, 500] + "..." if summary.length > 500
+      summary
     end
 
   end
