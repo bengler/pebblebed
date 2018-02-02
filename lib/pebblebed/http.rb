@@ -191,10 +191,20 @@ module Pebblebed
       response
     end
 
+    def self.gc
+      now = Time.now.to_i
+      Thread.current[:pebblebed_gc_at] ||= now
+      if (now - Thread.current[:pebblebed_gc_at] > 10)
+        Thread.current[:pebblebed_gc_at] = now
+        GC.start
+      end
+    end
+
     def self.do_easy(cache: true, &block)
       with_easy(cache: cache) do |easy|
         yield easy
         response = Response.new(easy.url, easy.header_str, easy.body_str)
+        self.gc
         return handle_http_errors(response)
       end
     end
