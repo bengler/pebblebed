@@ -194,7 +194,7 @@ module Pebblebed
     def self.gc
       now = Time.now.to_i
       Thread.current[:pebblebed_gc_at] ||= now
-      if (now - Thread.current[:pebblebed_gc_at] > 10)
+      if (now - Thread.current[:pebblebed_gc_at] > 60)
         Thread.current[:pebblebed_gc_at] = now
         GC.start
       end
@@ -223,10 +223,6 @@ module Pebblebed
     end
 
     def self.current_easy=(value)
-      if (current = Thread.current[:pebblebed_curb_easy])
-        # Reset old instance
-        current.reset
-      end
       Thread.current[:pebblebed_curb_easy] = value
     end
 
