@@ -239,37 +239,4 @@ describe Sinatra::Pebblebed do
       end
     end
   end
-
-  describe "identity caching" do
-
-    context "with logged in user" do
-      before(:each) { user!(:session => random_session) }
-      let(:checkpoint) { Pebblebed::Connector.new.checkpoint }
-
-      it "is not turned on by default" do
-        expect(checkpoint).to receive(:get).twice
-        get '/private'
-        get '/private'
-      end
-
-      it "can be turned on" do
-        app.set :cache_current_identity, true
-        expect(checkpoint).to receive(:get).once
-        get '/private'
-        get '/private'
-      end
-
-      context "with guest user" do
-        before(:each) { guest! }
-
-        it "is disabled" do
-          app.set :cache_current_identity, true
-          expect(checkpoint).to receive(:get).twice
-          get '/private'
-          get '/private'
-        end
-      end
-    end
-
-  end
 end

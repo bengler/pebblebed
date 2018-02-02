@@ -34,39 +34,16 @@ module Sinatra
       alias :checkpoint_session :current_session
 
       def pebbles
-        return @pebbles if @pebbles
         connector_options = {
           :host => ::Pebblebed.host || request.host || ::Pebblebed.default_host,
           :scheme => ::Pebblebed.scheme || request.scheme
         }
-        @pebbles = ::Pebblebed::Connector.new(checkpoint_session, connector_options)
+        ::Pebblebed::Connector.new(checkpoint_session, connector_options)
       end
 
       def current_identity_data
         return DeepStruct.wrap({}) unless current_session
-        return @current_identity_data if @current_identity_data_fetched
-        @current_identity_data_fetched = true
-        if cache_current_identity?
-          memcached = ::Pebblebed.memcached
-          cache_key = "identity-data-for-session-#{current_session}"
-          @current_identity_data = memcached.get(cache_key)
-          if @current_identity_data
-            logger.info "Using cached identity"
-            if memcached.respond_to?(:touch)
-              memcached.touch(cache_key, IDENTITY_CACHE_TTL)
-            end
-            return @current_identity_data
-          end
-
-          logger.info "Retrieving identity for caching"
-          @current_identity_data = pebbles.checkpoint.get("/identities/me")
-          if @current_identity_data['identity']
-            memcached.set(cache_key, @current_identity_data, IDENTITY_CACHE_TTL)
-          end
-        else
-          @current_identity_data = pebbles.checkpoint.get("/identities/me")
-        end
-        @current_identity_data
+        @current_identity_data ||= pebbles.checkpoint.get("/identities/me")
       end
 
       def current_identity
@@ -75,10 +52,6 @@ module Sinatra
 
       def current_profile
         current_identity_data['profile']
-      end
-
-      def cache_current_identity?
-        settings.respond_to?(:cache_current_identity) && settings.cache_current_identity
       end
 
       def require_identity
