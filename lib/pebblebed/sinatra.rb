@@ -29,13 +29,7 @@ module Sinatra
       end
 
       def current_session
-        if params[:session]
-          LOGGER.info("PebbleBedLog.current_session using params[:session]: #{params.inspect}")
-          return params[:session]
-        else
-          LOGGER.info("PebbleBedLog.current_session using cookie: #{request.cookies[::Pebblebed.session_cookie]}")
-          return request.cookies[::Pebblebed.session_cookie]
-        end
+        params[:session] || request.cookies[::Pebblebed.session_cookie]
       end
       alias :checkpoint_session :current_session
 

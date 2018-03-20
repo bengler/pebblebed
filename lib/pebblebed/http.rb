@@ -69,10 +69,14 @@ module Pebblebed
 
     def self.get(url = nil, params = nil, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      return do_easy { |easy|
-        easy.url = url_with_params(url, params)
+      get_url = url_with_params(url, params)
+      LOGGER.info("PebbleBedLog.get get_url: #{get_url}")
+      result = do_easy { |easy|
+        easy.url = get_url
         easy.http_get
       }
+      LOGGER.info("PebbleBedLog.get result: #{result.inspect}")
+      return result
     end
 
     def self.post(url, params, &block)
