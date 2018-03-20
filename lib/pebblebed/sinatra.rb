@@ -55,6 +55,7 @@ module Sinatra
         else
           LOGGER.info("PebbleBedLog.current_identity_data unset, fetching")
           @current_identity_data = pebbles.checkpoint.get("/identities/me")
+          LOGGER.info("PebbleBedLog.current_identity_data fetch got #{@current_identity_data.inspect}")
         end
         @current_identity_data
       end
