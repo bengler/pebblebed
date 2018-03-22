@@ -34,7 +34,16 @@ module Pebblebed
     end
   end
 
+  class HttpTransportError < StandardError
+    def initialize(e = nil)
+      super e
+      set_backtrace e.backtrace if e
+    end
+  end
+
   class HttpNotFoundError < HttpError; end
+  class HttpSocketError < HttpTransportError; end
+  class HttpTimeoutError < HttpTransportError; end
 
   module Http
 
@@ -83,7 +92,7 @@ module Pebblebed
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
-      return do_request(url) { |connection|
+      return do_request(url, idempotent: false) { |connection|
         connection.post(
           :host => url.host,
           :path => url.path,
@@ -225,18 +234,25 @@ module Pebblebed
       response
     end
 
-    def self.do_request(url, &block)
+    def self.do_request(url, idempotent: true, &block)
       with_connection(url) { |connection|
         begin
           request = block.call(connection)
           response = Response.new(url, request.status, request.body)
           return handle_http_errors(response)
+        rescue Excon::Errors::Timeout => error
+          raise HttpTimeoutError.new(error)
         rescue Excon::Errors::SocketError => error
+          raise HttpSocketError.new(error) unless idempotent
           # Connection failed, close the connection and try again
           connection.reset
-          request = block.call(connection)
-          response = Response.new(url, request.status, request.body)
-          return handle_http_errors(response)
+          begin
+            request = block.call(connection)
+            response = Response.new(url, request.status, request.body)
+            return handle_http_errors(response)
+          rescue Excon::Errors::SocketError => error
+            raise HttpSocketError.new(error)
+          end
         end
       }
     end
