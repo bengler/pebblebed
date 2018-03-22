@@ -45,7 +45,7 @@ module Sinatra
       def current_identity_data
         return DeepStruct.wrap({}) unless current_session
         if @current_identity_data
-          LOGGER.info("PebbleBedLog.current_identity_data: #{@current_identity_data.inspect}")
+          #LOGGER.info("PebbleBedLog.current_identity_data: #{@current_identity_data.inspect}")
         else
           LOGGER.info("PebbleBedLog.current_identity_data unset, fetching")
           @current_identity_data = pebbles.checkpoint.get("/identities/me")
