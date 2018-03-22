@@ -1,12 +1,14 @@
 # A wrapper for all low level http client stuff
 
 require 'uri'
-require 'curl'
+require 'excon'
 require 'yajl/json_gem'
 require 'queryparams'
 require 'nokogiri'
 require 'pathbuilder'
 require 'active_support'
+require 'timeout'
+require 'resolv'
 
 module Pebblebed
 
@@ -32,35 +34,43 @@ module Pebblebed
     end
   end
 
+  class HttpTransportError < StandardError
+    def initialize(e = nil)
+      super e
+      set_backtrace e.backtrace if e
+    end
+  end
+
   class HttpNotFoundError < HttpError; end
+  class HttpSocketError < HttpTransportError; end
+  class HttpTimeoutError < HttpTransportError; end
 
   module Http
 
     DEFAULT_CONNECT_TIMEOUT = 30
-    DEFAULT_REQUEST_TIMEOUT = nil
     DEFAULT_READ_TIMEOUT = 30
+    DEFAULT_WRITE_TIMEOUT = 60
 
     class << self
-      attr_reader :connect_timeout, :request_timeout, :read_timeout
+      attr_reader :connect_timeout, :read_timeout, :write_timeout
       def connect_timeout=(value)
         @connect_timeout = value
-        self.current_easy = nil
-      end
-      def request_timeout=(value)
-        @request_timeout = value
-        self.current_easy = nil
+        Thread.current[:pebblebed_excon] = {}
       end
       def read_timeout=(value)
         @read_timeout = value
-        self.current_easy = nil
+        Thread.current[:pebblebed_excon] = {}
+      end
+      def write_timeout=(value)
+        @write_timeout = value
+        Thread.current[:pebblebed_excon] = {}
       end
     end
 
     class Response
-      def initialize(url, header, body)
+      def initialize(url, status, body)
         @body = body
-        # We parse it ourselves because Curl::Easy fails when there's no text message
-        @status = header.scan(/HTTP\/\d\.\d\s(\d+)\s/).map(&:first).last.to_i
+        @status = status
         @url = url
       end
 
@@ -69,90 +79,123 @@ module Pebblebed
 
     def self.get(url = nil, params = nil, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      return do_easy { |easy|
-        easy.url = url_with_params(url, params)
-        easy.http_get
+      return do_request(url) { |connection|
+        connection.get(
+          :host => url.host,
+          :path => url.path,
+          :query => params,
+          :persistent => true
+        )
       }
     end
 
     def self.post(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
-      return do_easy { |easy|
-        easy.url = url.to_s
-        easy.headers['Accept'] = 'application/json'
-        easy.headers['Content-Type'] = content_type
-        easy.http_post(body)
+      return do_request(url, idempotent: false) { |connection|
+        connection.post(
+          :host => url.host,
+          :path => url.path,
+          :headers => {
+            'Accept' => 'application/json',
+            'Content-Type' => content_type
+          },
+          :body => body,
+          :persistent => true
+        )
       }
     end
 
     def self.put(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
-      return do_easy { |easy|
-        easy.url = url.to_s
-        easy.headers['Accept'] = 'application/json'
-        easy.headers['Content-Type'] = content_type
-        easy.http_put(body)
+      return do_request(url) { |connection|
+        connection.put(
+          :host => url.host,
+          :path => url.path,
+          :headers => {
+            'Accept' => 'application/json',
+            'Content-Type' => content_type
+          },
+          :body => body,
+          :persistent => true
+        )
       }
     end
 
     def self.delete(url, params, &block)
       url, params = url_and_params_from_args(url, params, &block)
-      return do_easy { |easy|
-        easy.url = url_with_params(url, params)
-        easy.http_delete
+      return do_request(url) { |connection|
+        connection.delete(
+          :host => url.host,
+          :path => url.path,
+          :query => params,
+          :persistent => true
+        )
       }
     end
 
+    def self.streamer(on_data)
+      lambda do |chunk, remaining_bytes, total_bytes|
+        on_data.call(chunk)
+        total_bytes
+      end
+    end
+
     def self.stream_get(url = nil, params = nil, options = {})
-      return do_easy(cache: false) { |easy|
-        on_data = options[:on_data] or raise "Option :on_data must be specified"
+      on_data = options[:on_data] or raise "Option :on_data must be specified"
 
-        url, params = url_and_params_from_args(url, params)
-
-        easy.url = url_with_params(url, params)
-        easy.on_body do |data|
-          on_data.call(data)
-          data.length
-        end
-        easy.http_get
+      url, params = url_and_params_from_args(url, params)
+      return do_request(url) { |connection|
+        connection.get(
+          :host => url.host,
+          :path => url.path,
+          :query => params,
+          :persistent => false,
+          :response_block => streamer(on_data)
+        )
       }
     end
 
     def self.stream_post(url, params, options = {})
-      return do_easy(cache: false) { |easy|
-        on_data = options[:on_data] or raise "Option :on_data must be specified"
+      on_data = options[:on_data] or raise "Option :on_data must be specified"
 
-        url, params = url_and_params_from_args(url, params)
-        content_type, body = serialize_params(params)
+      url, params = url_and_params_from_args(url, params)
+      content_type, body = serialize_params(params)
 
-        easy.url = url.to_s
-        easy.headers['Accept'] = 'application/json'
-        easy.headers['Content-Type'] = content_type
-        easy.on_body do |data|
-          on_data.call(data)
-          data.length
-        end
-        easy.http_post(body)
+      return do_request(url) { |connection|
+        connection.post(
+          :host => url.host,
+          :path => url.path,
+          :headers => {
+            'Accept' => 'application/json',
+            'Content-Type' => content_type
+          },
+          :body => body,
+          :persistent => false,
+          :response_block => streamer(on_data)
+        )
       }
     end
 
     def self.stream_put(url, params, options = {})
-      return do_easy(cache: false) { |easy|
-        on_data = options[:on_data] or raise "Option :on_data must be specified"
+      on_data = options[:on_data] or raise "Option :on_data must be specified"
 
-        url, params = url_and_params_from_args(url, params)
-        content_type, body = serialize_params(params)
+      url, params = url_and_params_from_args(url, params)
+      content_type, body = serialize_params(params)
 
-        easy.url = url.to_s
-        easy.headers['Accept'] = 'application/json'
-        easy.headers['Content-Type'] = content_type
-        easy.on_body do |data|
-          on_data.call(data)
-          data.length
-        end
-        easy.http_put(body)
+      return do_request(url) { |connection|
+        connection.put(
+          :host => url.host,
+          :path => url.path,
+          :headers => {
+            'Accept' => 'application/json',
+            'Content-Type' => content_type
+          },
+          :body => body,
+          :persistent => false,
+          :response_block => streamer(on_data)
+        )
       }
     end
 
@@ -191,44 +234,72 @@ module Pebblebed
       response
     end
 
-    def self.do_easy(cache: true, &block)
-      with_easy(cache: cache) do |easy|
-        yield easy
-        response = Response.new(easy.url, easy.header_str, easy.body_str)
-        return handle_http_errors(response)
-      end
+    def self.do_request(url, idempotent: true, &block)
+      with_connection(url) { |connection|
+        begin
+          request = block.call(connection)
+          response = Response.new(url, request.status, request.body)
+          return handle_http_errors(response)
+        rescue Excon::Errors::Timeout => error
+          raise HttpTimeoutError.new(error)
+        rescue Excon::Errors::SocketError => error
+          raise HttpSocketError.new(error) unless idempotent
+          # Connection failed, close the connection and try again
+          connection.reset
+          begin
+            request = block.call(connection)
+            response = Response.new(url, request.status, request.body)
+            return handle_http_errors(response)
+          rescue Excon::Errors::SocketError => error
+            raise HttpSocketError.new(error)
+          end
+        end
+      }
     end
 
-    def self.with_easy(cache: true, &block)
-      if cache
-        easy = self.current_easy ||= new_easy
+    def self.with_connection(url, &block)
+      connection = self.current_connection(url) || new_connection(url)
+      self.current_connection={:url => url, :connection => connection}
+      yield connection
+    end
+
+    def self.base_url(url)
+      if url.is_a?(URI)
+        uri = url
       else
-        easy = new_easy
+        uri = URI.parse(url)
       end
-      yield easy
+      "#{uri.scheme}://#{uri.host}:#{uri.port}"
     end
 
-    def self.current_easy
-      Thread.current[:pebblebed_curb_easy]
-    end
-
-    def self.current_easy=(value)
-      if (current = Thread.current[:pebblebed_curb_easy])
-        # Reset old instance
-        current.reset
+    def self.cache_key(url)
+      if url.is_a?(URI)
+        uri = url
+      else
+        uri = URI.parse(url)
       end
-      Thread.current[:pebblebed_curb_easy] = value
+      ip = Resolv.getaddress(uri.host)
+      "#{uri.scheme}://#{ip}:#{uri.port}"
     end
 
-    # Returns new Easy instance from current configuration.
-    def self.new_easy
-      easy = Curl::Easy.new
-      easy.connect_timeout = connect_timeout || DEFAULT_CONNECT_TIMEOUT
-      easy.timeout = request_timeout || DEFAULT_REQUEST_TIMEOUT
-      easy.low_speed_time = read_timeout || DEFAULT_READ_TIMEOUT
-      easy.low_speed_limit = 1
-      easy.follow_location = true
-      easy
+    def self.current_connection(url)
+      Thread.current[:pebblebed_excon] ||= {}
+      Thread.current[:pebblebed_excon][cache_key(url)]
+    end
+
+    def self.current_connection=(value)
+      Thread.current[:pebblebed_excon] ||= {}
+      Thread.current[:pebblebed_excon][cache_key(value[:url])] = value[:connection]
+    end
+
+    # Returns new Excon conection from current configuration.
+    def self.new_connection(url)
+      connection = Excon.new(base_url(url), {
+        :read_timeout => read_timeout || DEFAULT_READ_TIMEOUT,
+        :write_timeout => write_timeout || DEFAULT_WRITE_TIMEOUT,
+        :connect_timeout => connect_timeout || DEFAULT_CONNECT_TIMEOUT,
+        :thread_safe_sockets => false
+      })
     end
 
     def self.url_with_params(url, params)

@@ -22,8 +22,8 @@ describe Pebblebed::Http do
 
   before :all do
     Pebblebed::Http.connect_timeout = nil
-    Pebblebed::Http.request_timeout = nil
     Pebblebed::Http.read_timeout = nil
+    Pebblebed::Http.write_timeout = nil
 
     # Starts the mock pebble at localhost:8666/api/mock/v1
     mock_pebble.start
@@ -101,7 +101,7 @@ describe Pebblebed::Http do
           })
         result = JSON.parse(buf)
         expect(result["QUERY_STRING"]).to eq "hello=world"
-        expect(response.body).to eq nil
+        expect(response.body).to eq ''
       end
 
       it "supports multiple sequential streaming request" do
@@ -113,31 +113,53 @@ describe Pebblebed::Http do
             })
           result = JSON.parse(buf)
           expect(result["QUERY_STRING"]).to eq "hello=world"
-          expect(response.body).to eq nil
+          expect(response.body).to eq ''
         end
       end
     end
   end
-
-  it "enforces request timeout" do
-    Pebblebed::Http.request_timeout = 1
-    expect {
-      Pebblebed::Http.get(pebble_url, {slow: '2'})
-    }.to raise_error(Curl::Err::TimeoutError)
-    expect {
-      Pebblebed::Http.get(pebble_url, {slow: '0.5'})
-    }.not_to raise_error
-  end
-
   it "enforces read timeout" do
-    Pebblebed::Http.request_timeout = 1000
     Pebblebed::Http.read_timeout = 1
     expect {
       Pebblebed::Http.get(pebble_url, {slow: '30'})
-    }.to raise_error(Curl::Err::TimeoutError)
+    }.to raise_error(Pebblebed::HttpTimeoutError)
     expect {
       Pebblebed::Http.get(pebble_url, {slow: '0.5'})
     }.not_to raise_error
   end
 
+  describe 'retrying' do
+    run_count = 0
+
+    before do
+      Excon.stub({:method => :post}) {
+        raise Excon::Errors::SocketError.new(Exception.new "Mock Error")
+      }
+      Excon.stub({:method => :get}) { |params|
+        run_count += 1
+        if run_count <= 2
+          raise Excon::Errors::SocketError.new(Exception.new "Mock Error")
+        end
+        {:body => params[:body], :headers => params[:headers], :status => 200}
+      }
+    end
+
+    after do
+      Excon.stubs.clear
+    end
+
+    it "post with error doesn't try again" do
+      expect {
+        Pebblebed::Http.post(pebble_url, {hello: 'world'})
+      }.to raise_error(Pebblebed::HttpSocketError)
+    end
+
+    it "get request tries one more time" do
+      expect {
+        Pebblebed::Http.get(pebble_url, {hello: 'world'})
+      }.to raise_error(Pebblebed::HttpSocketError)
+      expect(run_count).to equal(2)
+    end
+
+  end
 end
