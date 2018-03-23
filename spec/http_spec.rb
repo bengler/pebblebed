@@ -17,7 +17,7 @@ describe Pebblebed::Http do
   end
 
   let :pebble_url do
-    "http://localhost:8666/api/mock/v1/echo"
+    "http://localhost:8666/api/mock/v1/echo?foo=bar"
   end
 
   before :all do
@@ -86,9 +86,17 @@ describe Pebblebed::Http do
   end
 
   it "encodes gets as url params" do
-    response = Pebblebed::Http.get(pebble_url, {hello: 'world'})
+    params = {
+      'min' => {
+        'hits' => '1'
+      },
+      'limit' => '2'
+    }
+    params['fields'] = {'document.category' => 'test'}
+    params['max'] = {'hits' => '3'}
+    response = Pebblebed::Http.get(pebble_url, params)
     result = JSON.parse(response.body)
-    expect(result["QUERY_STRING"]).to eq "hello=world"
+    expect(result["QUERY_STRING"]).to eq "min[hits]=1&limit=2&fields[document.category]=test&max[hits]=3&foo=bar"
   end
 
   describe 'streaming' do
@@ -100,7 +108,7 @@ describe Pebblebed::Http do
             buf << data
           })
         result = JSON.parse(buf)
-        expect(result["QUERY_STRING"]).to eq "hello=world"
+        expect(result["QUERY_STRING"]).to eq "hello=world&foo=bar"
         expect(response.body).to eq ''
       end
 
@@ -112,7 +120,7 @@ describe Pebblebed::Http do
               buf << data
             })
           result = JSON.parse(buf)
-          expect(result["QUERY_STRING"]).to eq "hello=world"
+          expect(result["QUERY_STRING"]).to eq "hello=world&foo=bar"
           expect(response.body).to eq ''
         end
       end
