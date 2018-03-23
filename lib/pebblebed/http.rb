@@ -9,6 +9,7 @@ require 'pathbuilder'
 require 'active_support'
 require 'timeout'
 require 'resolv'
+require 'addressable/uri'
 
 module Pebblebed
 
@@ -78,19 +79,19 @@ module Pebblebed
     end
 
     def self.get(url = nil, params = nil, &block)
-      url, params = url_and_params_from_args(url, params, &block)
+      url, params, query = url_and_params_from_args(url, params, &block)
       return do_request(url) { |connection|
         connection.get(
           :host => url.host,
           :path => url.path,
-          :query => params,
+          :query => QueryParams.encode((params || {}).merge(query)),
           :persistent => true
         )
       }
     end
 
     def self.post(url, params, &block)
-      url, params = url_and_params_from_args(url, params, &block)
+      url, params, query = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
       return do_request(url, idempotent: false) { |connection|
         connection.post(
@@ -101,13 +102,14 @@ module Pebblebed
             'Content-Type' => content_type
           },
           :body => body,
+          :query => query,
           :persistent => true
         )
       }
     end
 
     def self.put(url, params, &block)
-      url, params = url_and_params_from_args(url, params, &block)
+      url, params, query = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
       return do_request(url) { |connection|
         connection.put(
@@ -118,18 +120,19 @@ module Pebblebed
             'Content-Type' => content_type
           },
           :body => body,
+          :query => query,
           :persistent => true
         )
       }
     end
 
     def self.delete(url, params, &block)
-      url, params = url_and_params_from_args(url, params, &block)
+      url, params, query = url_and_params_from_args(url, params, &block)
       return do_request(url) { |connection|
         connection.delete(
           :host => url.host,
           :path => url.path,
-          :query => params,
+          :query => query,
           :persistent => true
         )
       }
@@ -145,12 +148,12 @@ module Pebblebed
     def self.stream_get(url = nil, params = nil, options = {})
       on_data = options[:on_data] or raise "Option :on_data must be specified"
 
-      url, params = url_and_params_from_args(url, params)
+      url, params, query = url_and_params_from_args(url, params)
       return do_request(url) { |connection|
         connection.get(
           :host => url.host,
           :path => url.path,
-          :query => params,
+          :query => QueryParams.encode((params || {}).merge(query)),
           :persistent => false,
           :response_block => streamer(on_data)
         )
@@ -160,7 +163,7 @@ module Pebblebed
     def self.stream_post(url, params, options = {})
       on_data = options[:on_data] or raise "Option :on_data must be specified"
 
-      url, params = url_and_params_from_args(url, params)
+      url, params, query = url_and_params_from_args(url, params)
       content_type, body = serialize_params(params)
 
       return do_request(url) { |connection|
@@ -173,6 +176,7 @@ module Pebblebed
           },
           :body => body,
           :persistent => false,
+          :query => query,
           :response_block => streamer(on_data)
         )
       }
@@ -181,7 +185,7 @@ module Pebblebed
     def self.stream_put(url, params, options = {})
       on_data = options[:on_data] or raise "Option :on_data must be specified"
 
-      url, params = url_and_params_from_args(url, params)
+      url, params, query = url_and_params_from_args(url, params)
       content_type, body = serialize_params(params)
 
       return do_request(url) { |connection|
@@ -193,6 +197,7 @@ module Pebblebed
             'Content-Type' => content_type
           },
           :body => body,
+          :query => query,
           :persistent => false,
           :response_block => streamer(on_data)
         )
@@ -315,7 +320,8 @@ module Pebblebed
         url.path = url.path.chomp("/")+pathbuilder.path
         (params ||= {}).merge!(pathbuilder.params)
       end
-      [url, params]
+      query = Addressable::URI.parse(url.to_s).query_values
+      [url, params, query]
     end
 
     def self.extract_error_summary(body)
