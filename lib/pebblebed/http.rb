@@ -320,7 +320,7 @@ module Pebblebed
         url.path = url.path.chomp("/")+pathbuilder.path
         (params ||= {}).merge!(pathbuilder.params)
       end
-      query = Addressable::URI.parse(url.to_s).query_values
+      query = Addressable::URI.parse(url.to_s).query_values || {}
       [url, params, query]
     end
 
