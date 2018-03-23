@@ -29,6 +29,7 @@ Gem::Specification.new do |s|
 
   s.add_runtime_dependency "deepstruct", ">= 0.0.4"
   s.add_runtime_dependency "excon", ">= 0.52.0"
+  s.add_runtime_dependency "addressable"
   s.add_runtime_dependency "yajl-ruby"
   s.add_runtime_dependency "queryparams"
   s.add_runtime_dependency "futurevalue"
