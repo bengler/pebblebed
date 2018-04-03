@@ -240,7 +240,7 @@ module Pebblebed
     end
 
     def self.do_request(url, idempotent: true, &block)
-      with_connection(url) { |connection|
+      with_connection(url, idempotent) { |connection|
         begin
           request = block.call(connection)
           response = Response.new(url, request.status, request.body)
@@ -262,8 +262,13 @@ module Pebblebed
       }
     end
 
-    def self.with_connection(url, &block)
-      connection = self.current_connection(url) || new_connection(url)
+    def self.with_connection(url, idempotent, &block)
+      connection = self.current_connection(url)
+      if connection
+        connection.reset unless idempotent
+      else
+        connection = new_connection(url)
+      end
       self.current_connection={:url => url, :connection => connection}
       yield connection
     end
