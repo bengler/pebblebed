@@ -8,7 +8,7 @@ require 'nokogiri'
 require 'pathbuilder'
 require 'active_support'
 require 'timeout'
-require 'resolv'
+require 'socket'
 require 'addressable/uri'
 
 module Pebblebed
@@ -288,7 +288,7 @@ module Pebblebed
       else
         uri = URI.parse(url)
       end
-      ip = Resolv.getaddress(uri.host)
+      ip = IPSocket.getaddress(uri.host)
       "#{uri.scheme}://#{ip}:#{uri.port}"
     end
 
