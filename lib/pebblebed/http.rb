@@ -128,10 +128,16 @@ module Pebblebed
 
     def self.delete(url, params, &block)
       url, params, query = url_and_params_from_args(url, params, &block)
+      content_type, body = serialize_params(params)
       return do_request(url) { |connection|
         connection.delete(
           :host => url.host,
           :path => url.path,
+          :headers => {
+            'Accept' => 'application/json',
+            'Content-Type' => content_type
+          },
+          :body => body,
           :query => query,
           :persistent => true
         )
