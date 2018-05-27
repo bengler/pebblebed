@@ -151,14 +151,13 @@ module Pebblebed
       end
     end
 
-    def self.stream_get(url = nil, params = nil, options = {})
-      on_data = options[:on_data] or raise "Option :on_data must be specified"
-
+    def self.stream_get(url = nil, params = nil, headers: {}, on_data:)
       url, params, query = url_and_params_from_args(url, params)
       return do_request(url) { |connection|
         connection.get(
           :host => url.host,
           :path => url.path,
+          :headers => headers,
           :query => QueryParams.encode((params || {}).merge(query)),
           :persistent => false,
           :response_block => streamer(on_data)
@@ -166,9 +165,7 @@ module Pebblebed
       }
     end
 
-    def self.stream_post(url, params, options = {})
-      on_data = options[:on_data] or raise "Option :on_data must be specified"
-
+    def self.stream_post(url, params, headers: {}, on_data:)
       url, params, query = url_and_params_from_args(url, params)
       content_type, body = serialize_params(params)
 
@@ -179,7 +176,7 @@ module Pebblebed
           :headers => {
             'Accept' => 'application/json',
             'Content-Type' => content_type
-          },
+          }.merge(headers),
           :body => body,
           :persistent => false,
           :query => query,
@@ -201,7 +198,7 @@ module Pebblebed
           :headers => {
             'Accept' => 'application/json',
             'Content-Type' => content_type
-          },
+          }.merge(headers),
           :body => body,
           :query => query,
           :persistent => false,

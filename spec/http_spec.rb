@@ -124,8 +124,20 @@ describe Pebblebed::Http do
           expect(response.body).to eq ''
         end
       end
+
+      it "sends headers" do
+        Excon.stub({:method => :get}) { |params|
+          expect(params[:headers]['Accept']).to eq 'application/x-ndjson'
+          {body: '', headers: {}, status: 200}
+        }
+
+        Pebblebed::Http.stream_get("http://example.org/", {},
+          headers: {'Accept' => 'application/x-ndjson'},
+          on_data: ->() {})
+      end
     end
   end
+
   it "enforces read timeout" do
     Pebblebed::Http.read_timeout = 1
     expect {

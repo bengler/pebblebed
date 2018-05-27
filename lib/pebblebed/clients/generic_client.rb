@@ -27,9 +27,16 @@ module Pebblebed
       method_name = "stream_#{method.to_s.downcase}"
       raise "Method not supported for streaming" unless Pebblebed::Http.respond_to?(method_name)
 
+      headers = {}
+      if accept
+        headers['Accept'] = accept
+      end
+
       if accept == 'application/x-ndjson'
         buffer = NdjsonBuffer.new(on_data)
-        response = Pebblebed::Http.send(method_name, service_url(url), service_params(params),
+        response = Pebblebed::Http.send(method_name,
+          service_url(url), service_params(params),
+          headers: headers,
           on_data: ->(data) {
             buffer << data
           })
@@ -38,6 +45,7 @@ module Pebblebed
       end
 
       return Pebblebed::Http.send(method_name, service_url(url), service_params(params),
+        headers: headers,
         on_data: on_data)
     end
 
