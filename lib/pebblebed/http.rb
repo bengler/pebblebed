@@ -48,6 +48,7 @@ module Pebblebed
 
   module Http
 
+    DEFAULT_REQUEST_TIMEOUT = 30
     DEFAULT_CONNECT_TIMEOUT = 30
     DEFAULT_READ_TIMEOUT = 30
     DEFAULT_WRITE_TIMEOUT = 60
@@ -93,7 +94,7 @@ module Pebblebed
     def self.post(url, params, &block)
       url, params, query = url_and_params_from_args(url, params, &block)
       content_type, body = serialize_params(params)
-      return do_request(url, idempotent: false) { |connection|
+      return do_request(url) { |connection|
         connection.post(
           :host => url.host,
           :path => url.path,
@@ -153,7 +154,7 @@ module Pebblebed
 
     def self.stream_get(url = nil, params = nil, headers: {}, on_data:)
       url, params, query = url_and_params_from_args(url, params)
-      return do_request(url) { |connection|
+      return do_request(url, share: false) { |connection|
         connection.get(
           :host => url.host,
           :path => url.path,
@@ -168,8 +169,7 @@ module Pebblebed
     def self.stream_post(url, params, headers: {}, on_data:)
       url, params, query = url_and_params_from_args(url, params)
       content_type, body = serialize_params(params)
-
-      return do_request(url) { |connection|
+      return do_request(url, share: false) { |connection|
         connection.post(
           :host => url.host,
           :path => url.path,
@@ -185,13 +185,10 @@ module Pebblebed
       }
     end
 
-    def self.stream_put(url, params, options = {})
-      on_data = options[:on_data] or raise "Option :on_data must be specified"
-
+    def self.stream_put(url, params, on_data:)
       url, params, query = url_and_params_from_args(url, params)
       content_type, body = serialize_params(params)
-
-      return do_request(url) { |connection|
+      return do_request(url, share: false) { |connection|
         connection.put(
           :host => url.host,
           :path => url.path,
@@ -242,37 +239,47 @@ module Pebblebed
       response
     end
 
-    def self.do_request(url, idempotent: true, &block)
-      with_connection(url, idempotent) { |connection|
-        begin
-          request = block.call(connection)
-          response = Response.new(url, request.status, request.body)
-          return handle_http_errors(response)
-        rescue Excon::Errors::Timeout => error
-          raise HttpTimeoutError.new(error)
-        rescue Excon::Errors::SocketError => error
-          raise HttpSocketError.new(error) unless idempotent
-          # Connection failed, close the connection and try again
-          connection.reset
+    def self.do_request(url, share: true, idempotent: false, &block)
+      reset = false
+      return with_retries(timeout: (idempotent ? -1 : self.read_timeout) || DEFAULT_REQUEST_TIMEOUT) {
+        return with_connection(url, share: share) { |connection|
+          connection.reset if reset
+          reset = true  # On next retry
+
           begin
             request = block.call(connection)
             response = Response.new(url, request.status, request.body)
             return handle_http_errors(response)
+          rescue Excon::Errors::Timeout => error
+            raise HttpTimeoutError.new(error)
           rescue Excon::Errors::SocketError => error
             raise HttpSocketError.new(error)
           end
-        end
+        }
       }
     end
 
-    def self.with_connection(url, idempotent, &block)
-      connection = self.current_connection(url)
-      if connection
-        connection.reset unless idempotent
-      else
-        connection = new_connection(url)
+    def self.with_retries(timeout: 0, &block)
+      deadline = Time.now + timeout
+      interval = 0.1
+      begin
+        return yield
+      rescue HttpTimeoutError, HttpSocketError => e
+        raise if Time.now >= deadline
+        sleep(interval)
+        interval = [30, interval * 2].min
+        retry
       end
-      self.current_connection={:url => url, :connection => connection}
+    end
+
+    def self.with_connection(url, share: false, &block)
+      unless share
+        return yield new_connection(url)
+      end
+
+      connection = self.current_connection(url)
+      connection ||= new_connection(url)
+      self.current_connection = {url: url, connection: connection}
       yield connection
     end
 

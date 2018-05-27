@@ -157,7 +157,7 @@ describe Pebblebed::Http do
       }
       Excon.stub({:method => :get}) { |params|
         run_count += 1
-        if run_count <= 2
+        if run_count <= 10
           raise Excon::Errors::SocketError.new(Exception.new "Mock Error")
         end
         {:body => params[:body], :headers => params[:headers], :status => 200}
@@ -178,7 +178,7 @@ describe Pebblebed::Http do
       expect {
         Pebblebed::Http.get(pebble_url, {hello: 'world'})
       }.to raise_error(Pebblebed::HttpSocketError)
-      expect(run_count).to equal(2)
+      expect(run_count).to be > 2
     end
 
   end
