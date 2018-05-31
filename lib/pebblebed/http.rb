@@ -1,6 +1,5 @@
 # A wrapper for all low level http client stuff
 
-require 'resolv'
 require 'uri'
 require 'excon'
 require 'yajl/json_gem'
@@ -299,7 +298,7 @@ module Pebblebed
       else
         uri = URI.parse(url)
       end
-      ip = Resolv.getaddress(uri.host)
+      ip = IPSocket.getaddress(uri.host)
       "#{uri.scheme}://#{ip}:#{uri.port}"
     end
 
