@@ -35,14 +35,18 @@ module Pebblebed
     end
   end
 
+  class HttpNotFoundError < HttpError; end
+
   class HttpTransportError < StandardError
-    def initialize(e = nil)
-      super e
-      set_backtrace e.backtrace if e
+    def initialize(message, exception, url)
+      super(message)
+      set_backtrace(exception.backtrace)
+      @url = url
     end
+
+    attr_reader :url
   end
 
-  class HttpNotFoundError < HttpError; end
   class HttpSocketError < HttpTransportError; end
   class HttpTimeoutError < HttpTransportError; end
 
@@ -250,10 +254,10 @@ module Pebblebed
             request = block.call(connection)
             response = Response.new(url, request.status, request.body)
             return handle_http_errors(response)
-          rescue Excon::Errors::Timeout => error
-            raise HttpTimeoutError.new(error)
-          rescue Excon::Errors::SocketError => error
-            raise HttpSocketError.new(error)
+          rescue Excon::Errors::Timeout => e
+            raise HttpTimeoutError.new("#{e} [#{url}]", e, url)
+          rescue Excon::Errors::SocketError => e
+            raise HttpSocketError.new("#{e} [#{url}]", e, url)
           end
         }
       }
@@ -264,7 +268,7 @@ module Pebblebed
       interval = 0.1
       begin
         return yield
-      rescue HttpTimeoutError, HttpSocketError => e
+      rescue HttpTimeoutError, HttpSocketError
         raise if Time.now >= deadline
         sleep(interval)
         interval = [30, interval * 2].min
@@ -314,11 +318,11 @@ module Pebblebed
 
     # Returns new Excon conection from current configuration.
     def self.new_connection(url)
-      connection = Excon.new(base_url(url), {
-        :read_timeout => read_timeout || DEFAULT_READ_TIMEOUT,
-        :write_timeout => write_timeout || DEFAULT_WRITE_TIMEOUT,
-        :connect_timeout => connect_timeout || DEFAULT_CONNECT_TIMEOUT,
-        :thread_safe_sockets => false
+      Excon.new(base_url(url), {
+        read_timeout: read_timeout || DEFAULT_READ_TIMEOUT,
+        write_timeout: write_timeout || DEFAULT_WRITE_TIMEOUT,
+        connect_timeout: connect_timeout || DEFAULT_CONNECT_TIMEOUT,
+        thread_safe_sockets: false
       })
     end
 
